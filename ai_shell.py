@@ -768,6 +768,100 @@ def observation_fingerprint(text):
         " ".join(lines).encode("utf-8", "replace")).hexdigest()[:16]
 
 
+def _norm_app_name(s):
+    """Uygulama adini karsilastirilabilir hale getirir: yol/uzanti/isim-dizini."""
+    s = str(s or "").strip().lower().replace("\\", "/")
+    s = s.split("/")[-1]
+    if s.endswith(".exe"):
+        s = s[:-4]
+    return s
+
+
+# Turkce/lokalize pencere basliklari. Windows Turkce kurulumunda Not Defteri
+# "notepad" degil "Not Defteri" penceresi acabilir; tam alt-dize eslesmesi
+# bu durumda surekli yanlis alarm uretirdi.
+APP_NAME_ALIASES = {
+    "notepad": ["notepad", "not defteri", "not defter", "gunluk"],
+    "calc": ["calculator", "hesap makinesi"],
+    "mspaint": ["paint", "boya", "resim"],
+    "explorer": ["file explorer", "dosya gezgini", "dosya gecgini"],
+    "chrome": ["chrome", "google chrome"],
+    "edge": ["edge", "microsoft edge"],
+    "word": ["word", "microsoft word"],
+    "excel": ["excel", "microsoft excel"],
+    "powershell": ["powershell"],
+    "cmd": ["command prompt", "komut istemi"],
+    "terminal": ["windows terminal", "terminal", "konsol"],
+    "photos": ["photos", "fotograflar"],
+}
+
+
+def _title_matches(want, title):
+    w, t = _norm_app_name(want), str(title or "").strip().lower()
+    if not w or not t:
+        return False
+    if w in t or t in w:
+        return True
+    for alt in APP_NAME_ALIASES.get(w, ()):
+        if alt in t:
+            return True
+    return False
+
+
+def verify_action_result(name, args, result):
+    """Eylem sonucunun ISTEKLE ne kadar ortustugunu denetler.
+
+    Modelin bunu fark etmesini beklemiyoruz. Gozlenen somut hata: model
+    dogru sekilde computer_launch {"app": "notepad"} cagrdi, sunucu
+    method=ExistingInstance donup alakasiz bir pencere gosterdi, model de
+    sonucu dogrulamadan uydurma bir basari raporu yazdi.
+
+    Istenip istenmedigi sunucunun kendi ciktisindan anlasilamiyorsa bu bir
+    ESLESME HATASI olabilir; modele gercek bulgu soylenmelidir. Dogrulama
+    modelin isi degil, runtime'in isidir.
+    """
+    notes = []
+    raw = strip_untrusted(result).strip()
+    if raw[:1] != "{":
+        return ""
+    try:
+        obj = json.loads(raw)
+    except Exception:
+        return ""
+    if not isinstance(obj, dict):
+        return ""
+
+    if name == "computer_launch" and obj.get("method") == "ExistingInstance":
+        want = (args.get("app") or args.get("executable") or args.get("path")
+                or args.get("search") or "")
+        title = str((obj.get("window") or {}).get("title") or "")
+        if want and title and not _title_matches(want, title):
+            notes.append(
+                f"KONTROL UYARISI: '{want}' istedin, ama sunucu mevcut bir "
+                f"pencereyle eslesti (method=ExistingInstance) ve donen "
+                f"pencere basligi '{title[:100]}' — istenen uygulama ile "
+                f"iliskisi belirsiz. Bu ESLESME HATASI olabilir; acildi "
+                "diye sayma. computer_windows ile dogrula.")
+        elif want:
+            notes.append(
+                f"KONTROL: '{want}' istedin ve sunucu mevcut bir pencereyle "
+                f"eslestirdi (method=ExistingInstance). Pencere gercekten "
+                "istediğin uygulama mi, computer_windows ile teyit et.")
+
+    if name == "computer_close_window":
+        closed = obj.get("closed")
+        if obj.get("status") == "Malformed" or obj.get("error") == "Malformed":
+            notes.append(
+                "KONTROL: kapatma reddedildi; HICBIR pencere kapanmadi. "
+                "Hata metnindeki 'candidates' bir kapanma IZNI DEGILDIR; "
+                "kullaniciya sor veya hedefi netlestir.")
+
+    if mcp_result_failed(raw) and not obj.get("error"):
+        notes.append("KONTROL: arac basarisiz dondu; sonucu basari diye yazma.")
+
+    return ("\n" + "\n".join("- " + n for n in notes)) if notes else ""
+
+
 def execute_mcp_guarded(mcp, name, args, task_state, logger=None,
                         confirm_close=None, confirm_close_any=None):
     """TEK arac yurutme kapisi.
@@ -815,6 +909,12 @@ def execute_mcp_guarded(mcp, name, args, task_state, logger=None,
     if logger:
         logger.event("tool_result", tool=name, args=args, result=result[:2000],
                      duration_s=round(time.time() - t0, 2))
+    # Dogrulama notu: istenen ile donen ortusmuyorsa modele soyle.
+    # (Guvenlik denetimi degil — BU runtime'in dogrulama sorumlulugu.)
+    check = verify_action_result(name, args, result)
+    if check:
+        result += check
+        logger.event("result_verified", tool=name, note=check[:400])
     # Gozlem araclari modele duz metin donmez; kesiklilik isaretlenir.
     if name in OBSERVE_TOOLS and not mcp_result_failed(result):
         result = process_observation(result, name)
