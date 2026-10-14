@@ -487,6 +487,79 @@ def mcp_result_state(text):
 # yapmasi burada engellenir. Hicbir arac bu katmani atlayarak calismaz.
 # ============================================================================
 
+_SERVER_POLICY = None
+_POLICY_MCP = [None]
+
+
+def _policy_mcp(mcp):
+    """fetch_server_policy'nin global listesinden okuyabilmesi icin."""
+    global _SERVER_POLICY
+    if mcp is not None and (not _POLICY_MCP[0] or _POLICY_MCP[0] is not mcp):
+        _POLICY_MCP[0] = mcp
+        _SERVER_POLICY = None
+
+
+def fetch_server_policy(mcp=None, timeout=20):
+    """Sunucudan CANLI politika çeker — TEK KAYNAK.
+
+    inbrisk MCP'si politikasini `computer_capabilities` ile yayinlar:
+      errors          -> hata sozlugu (OutcomeKind)
+      lifecyclePolicy -> pencere sahipligi kurallari (rule1..rule6)
+      hostEnvironment -> korunacak altyapi (terminal/IDE/Colab tarayici)
+      controlState    -> canli acil durdurma durumu
+      emergencyHotkey / resumeHotkey
+      verification    -> Verified/Unverified/Failed anlamlari
+
+    El yazili surec listeleri bu yuzden KAYNAK DEGIL; sunucu dogrulanir ve
+    listeler onunla hizalanir. Sunucu erisilemezse gomulu varsayilanlar
+    kullanilir, boylece sistem sunucusuz da calisir.
+    """
+    global _SERVER_POLICY
+    mcp = mcp or _POLICY_MCP[0]
+    if _SERVER_POLICY is not None:
+        return _SERVER_POLICY
+    if mcp is None:
+        return {}
+    try:
+        raw = mcp.call_tool("computer_capabilities", {"detail": "full"},
+                            timeout=timeout)
+        obj = json.loads(strip_untrusted(raw))
+        _SERVER_POLICY = obj if isinstance(obj, dict) else {}
+    except Exception:
+        _SERVER_POLICY = {}
+    return _SERVER_POLICY
+
+
+def server_control_state():
+    """Canli kontrol durumu: Active / Paused / EmergencyStopped."""
+    return str(fetch_server_policy().get("controlState") or "")
+
+
+def server_error_vocabulary():
+    """Sunucunun tanidigi hata turleri — kendi listemizi dogrulamak icin."""
+    return set(fetch_server_policy().get("errors") or ())
+
+
+def lifecycle_policy_lines(max_rules=6):
+    """Sunucunun sahiplik kurallarini modele aktarir.
+
+    Elle yazilmis bir surec listesi DEGILDIR; calisan sunucunun kuralidir ve
+    surumle birlikte guncellenir. Daha once sabit bir "korunan surecler"
+    listesi kullaniliyordu; o zamanla bayatlar ve sunucuyla uyusmazdi.
+    """
+    rules = fetch_server_policy().get("lifecyclePolicy") or {}
+    if isinstance(rules, dict):
+        return [str(rules[f"rule{i}"]) for i in range(1, max_rules + 1)
+                if rules.get(f"rule{i}")]
+    return []
+
+
+def host_environment_text():
+    """Korunacak altyapi: terminal, IDE, Colab/Jupyter tarayicisi."""
+    host = fetch_server_policy().get("hostEnvironment") or {}
+    return str(host.get("rules") or "") if isinstance(host, dict) else ""
+
+
 class ToolRejected(Exception):
     """Cagri MCP'ye gonderilmeden once ToolGuard tarafindan reddedildi."""
 
@@ -951,9 +1024,17 @@ OUTCOME_RETRYABLE = {
     "TargetNotFound", "Stale", "StaleFrame", "WindowLost", "Timeout",
     "InputRejected", "CaptureUnavailable", "TargetOffscreen",
     "TargetOnDifferentScreen", "ConcurrencyConflict", "Unverified",
-    "ObservedChange",
+    "ObservedChange", "WindowGeometryChanged",
 }
 OUTCOME_NOPROGRESS = {"NoProgress", "Unverified"}
+
+# NOT: Sunucunun yayinladigi `errors` dizisi (20 tur) ile C# enumundaki
+# OutcomeKind (27 tur) AYRI degildir. ConcurrencyConflict, ObservedChange,
+# TargetOffscreen, TargetOnDifferentScreen, InterruptedByDialog,
+# PausedForHuman ve DeliveryUnsupported enum'da var ama runtime listesinde
+# yayinlanmiyor. Burada enumun tamami kullanilir; boylece sunucu bir hatanin
+# adini yayinlamasa bile dogru siniflandirilir. Sunucunun gercekten
+# tanidigi turler fetch_server_policy()["errors"] ile dogrulanabilir.
 
 # Bu sonuclar modele ASLA yeniden denenmemeli; yeniden denemek reddedilmemis
 # bir eslesmeyi zorlama ya da guvenlik kapisini atlamaya calismaktir.
@@ -1394,11 +1475,34 @@ SYSTEM_PROMPT = (
     "GUVENLIK:\n"
     "- Yikici islerden (dosya silme, format) kacin; gerekirse once kullaniciya sor.\n"
     "- Kendi acmadigin pencereleri onaysiz kapatma.\n"
-    "- Bu korunan sureclere dokunma: Antigravity.exe, Code.exe, python.exe,\n"
-    "  node.exe, Hermes.exe, inbrisk.exe, Devin.exe, chrome.exe.\n"
     "\n"
     "Bilmedigini uydurmak yerine gozlem yap ve emin ol. Her zaman Turkce cevap ver."
 )
+
+
+def build_system_prompt(mcp=None, cwd=None):
+    """SYSTEM_PROMPT + CALISAN SUNUCUNUN canli politikasi.
+
+    Korunan surecler ve pencere sahipligi kurallari elle yazilmaz; sunucu
+    yayinlar (lifecyclePolicy, hostEnvironment). Boylece politika InbriskLLM
+    ile sunucu arasinda kopyalanmaz — sunucu guncellendiginde biz de
+    guncellenmis oluruz. Sunucu yoksa yalnizca taban prompt kullanilir.
+    """
+    parts = [SYSTEM_PROMPT]
+    rules = lifecycle_policy_lines() if mcp else []
+    if rules:
+        parts.append("\n\nPENCERE SAHIPLIGI KURALLARI (sunucudan):\n"
+                     + "\n".join("- " + r for r in rules))
+    host = host_environment_text() if mcp else ""
+    if host:
+        parts.append("\n\nKORUNACAK ALTYAPI:\n- " + host)
+    pol = fetch_server_policy() if mcp else {}
+    if pol.get("emergencyHotkey"):
+        parts.append(f"\n- Acil durdurma: {pol['emergencyHotkey']}. "
+                     f"Devam ettirmek yalnizca yerel kullanici "
+                     f"{pol.get('resumeHotkey', 'Ctrl+Alt+Shift+Pause')} ile "
+                     "yapar; sen acamazsin.")
+    return "".join(parts)
 
 # Plan/komut yazip tool cagirmadan duran modelleri yakalayan desen
 PLAN_IN_TEXT = re.compile(
@@ -2348,12 +2452,17 @@ def main():
     logger = Logger(LOGS_DIR)
     mcp = PersistentInbriskMCP(exe_path=args.inbrisk_exe,
                                timeout=max(args.timeout, 35), logger=logger)
+    # Politika sunucudan TEK KAYNAK olarak alinir
+    _policy_mcp(mcp)
+    fetch_server_policy(mcp)
     # Canli MCP araclarini modele duz olarak sun (dolaylilik yok)
     args.ollama_tools = build_ollama_tools(mcp)
-    logger.event("tools_published", count=len(args.ollama_tools))
+    logger.event("tools_published", count=len(args.ollama_tools),
+                 control=server_control_state(),
+                 errors=len(server_error_vocabulary()))
     shell = PersistentShell(timeout=args.timeout)
     messages = [{"role": "system",
-                 "content": SYSTEM_PROMPT
+                 "content": build_system_prompt(mcp)
                  + f" Calisma dizini: {os.getcwd()}."}]
     auto_path = os.path.join(
         SESSIONS_DIR, time.strftime("auto_%Y%m%d-%H%M%S") + ".json")
