@@ -1,0 +1,6 @@
+{"ts": "2026-10-14 02:46:11", "epoch": 1791935171.7078614, "type": "session_start", "model": "qwen3.5:2b", "backend": "inbrisk-agent", "shell_pid": 3280, "mcp_pid": 22312, "cwd": "C:\\Users\\Ahmet\\Documents\\InbriskLLM"}
+{"ts": "2026-10-14 02:46:11", "epoch": 1791935171.71837, "type": "user", "text": "Ekranda ne var?"}
+{"ts": "2026-10-14 02:46:27", "epoch": 1791935187.2417684, "type": "inbrisk_agent_finish", "message": "Ekranda ne var? sorusu için görüntüleme yeteneğim yok."}
+{"ts": "2026-10-14 02:46:27", "epoch": 1791935187.2417684, "type": "agent_turn", "model": "qwen3.5:2b", "text": "Ekranda ne var?", "duration_s": 15.52}
+{"ts": "2026-10-14 02:46:27", "epoch": 1791935187.2433338, "type": "user", "text": "cikis"}
+{"ts": "2026-10-14 02:46:27", "epoch": 1791935187.2433338, "type": "session_end"}

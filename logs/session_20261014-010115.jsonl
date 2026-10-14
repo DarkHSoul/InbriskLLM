@@ -1,0 +1,9 @@
+{"ts": "2026-10-14 01:01:16", "epoch": 1791928876.628309, "type": "session_start", "model": "inbrisk-agent", "backend": "inbrisk-agent", "shell_pid": 16936, "mcp_pid": 16584, "cwd": "C:\\Users\\Ahmet\\Documents\\InbriskLLM"}
+{"ts": "2026-10-14 01:01:16", "epoch": 1791928876.6295724, "type": "user", "text": "acik pencereleri listele"}
+{"ts": "2026-10-14 01:01:23", "epoch": 1791928883.0210094, "type": "inbrisk_agent_reject", "tool": "computer_list_open_windows", "attempts": 1}
+{"ts": "2026-10-14 01:01:26", "epoch": 1791928886.0348601, "type": "inbrisk_agent_reject", "tool": "computer_copy_and_save", "attempts": 2}
+{"ts": "2026-10-14 01:01:29", "epoch": 1791928889.1271925, "type": "inbrisk_agent_reject", "tool": "computer_list_open_windows", "attempts": 3}
+{"ts": "2026-10-14 01:01:29", "epoch": 1791928889.1271925, "type": "agent_turn", "model": "inbrisk-agent", "text": "acik pencereleri listele", "duration_s": 12.5}
+{"ts": "2026-10-14 01:01:29", "epoch": 1791928889.1306992, "type": "slash", "command": "/help"}
+{"ts": "2026-10-14 01:01:29", "epoch": 1791928889.1317446, "type": "user", "text": "cikis"}
+{"ts": "2026-10-14 01:01:29", "epoch": 1791928889.1317446, "type": "session_end"}

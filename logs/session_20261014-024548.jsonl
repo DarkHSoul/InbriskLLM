@@ -1,0 +1,16 @@
+{"ts": "2026-10-14 02:45:49", "epoch": 1791935149.559903, "type": "session_start", "model": "qwen3.5:2b", "backend": "inbrisk-agent", "shell_pid": 7572, "mcp_pid": 10816, "cwd": "C:\\Users\\Ahmet\\Documents\\InbriskLLM"}
+{"ts": "2026-10-14 02:45:53", "epoch": 1791935153.387517, "type": "user", "text": "merhaba"}
+{"ts": "2026-10-14 02:45:53", "epoch": 1791935153.387517, "type": "inbrisk_agent_chat", "response": "Merhaba! Ben Inbrisk yerel ajanınızım. Masaüstü otomasyon, pencere yönetimi, uygulama başlatma, tıklama, yazma gibi görevlerde yardımcı olabilirim. Ne yapmamı istersiniz?"}
+{"ts": "2026-10-14 02:45:53", "epoch": 1791935153.387517, "type": "agent_turn", "model": "qwen3.5:2b", "text": "merhaba", "duration_s": 0.0}
+{"ts": "2026-10-14 02:46:00", "epoch": 1791935160.127499, "type": "user", "text": "?"}
+{"ts": "2026-10-14 02:46:08", "epoch": 1791935168.730485, "type": "inbrisk_agent_finish", "message": "Sistem hazır ve bekliyor. Lütfen görev veya komutlarınızı belirtin."}
+{"ts": "2026-10-14 02:46:08", "epoch": 1791935168.730485, "type": "agent_turn", "model": "qwen3.5:2b", "text": "?", "duration_s": 8.6}
+{"ts": "2026-10-14 02:46:17", "epoch": 1791935177.8192878, "type": "user", "text": "nasılsın"}
+{"ts": "2026-10-14 02:46:17", "epoch": 1791935177.8198159, "type": "inbrisk_agent_chat", "response": "Merhaba! Ben Inbrisk yerel ajanınızım. Masaüstü otomasyon, pencere yönetimi, uygulama başlatma, tıklama, yazma gibi görevlerde yardımcı olabilirim. Ne yapmamı istersiniz?"}
+{"ts": "2026-10-14 02:46:17", "epoch": 1791935177.8198159, "type": "agent_turn", "model": "qwen3.5:2b", "text": "nasılsın", "duration_s": 0.0}
+{"ts": "2026-10-14 02:46:21", "epoch": 1791935181.985631, "type": "user", "text": "anlamadım"}
+{"ts": "2026-10-14 02:46:37", "epoch": 1791935197.39064, "type": "inbrisk_agent_finish", "message": "Anladım, Windows masaüstü otomasyon ajanı olarak görevim: Tek bir JSON nesnesi döndürmek ve computer_batch/computer_do gibi araçları kullanmak. Görev TAMAMLANDIĞINDA veya kullanıcı yalnızca sohbet ediyorsa agent_finish ile bitireceğim."}
+{"ts": "2026-10-14 02:46:37", "epoch": 1791935197.39064, "type": "agent_turn", "model": "qwen3.5:2b", "text": "anlamadım", "duration_s": 15.41}
+{"ts": "2026-10-14 02:47:15", "epoch": 1791935235.5357013, "type": "user", "text": "açık olan görevleri sırala"}
+{"ts": "2026-10-14 02:47:45", "epoch": 1791935265.9480295, "type": "cancelled"}
+{"ts": "2026-10-14 02:47:46", "epoch": 1791935266.0451193, "type": "session_end"}

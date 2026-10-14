@@ -1,0 +1,12 @@
+{"ts": "2026-10-14 02:37:25", "epoch": 1791934645.2556956, "type": "session_start", "model": "qwen3.5:2b", "backend": "inbrisk-agent", "shell_pid": 14324, "mcp_pid": 21428, "cwd": "C:\\Users\\Ahmet\\Documents\\InbriskLLM"}
+{"ts": "2026-10-14 02:37:27", "epoch": 1791934647.9135647, "type": "user", "text": "hi"}
+{"ts": "2026-10-14 02:37:40", "epoch": 1791934660.1901426, "type": "inbrisk_agent_call", "tool": "computer_batch", "args": {}, "ai_ms": 11509}
+{"ts": "2026-10-14 02:37:40", "epoch": 1791934660.2368646, "type": "inbrisk_mcp", "tool": "computer_batch", "result": "{\"status\": \"Failed\", \"error\": \"{\\\"error\\\":\\\"Malformed\\\",\\\"detail\\\":\\\"either steps, set, or read array is required\\\",\\\"durationMs\\\":0}\"}"}
+{"ts": "2026-10-14 02:37:40", "epoch": 1791934660.2368646, "type": "inbrisk_mcp_result", "tool": "computer_batch", "result": "{\"status\": \"Failed\", \"error\": \"{\\\"error\\\":\\\"Malformed\\\",\\\"detail\\\":\\\"either steps, set, or read array is required\\\",\\\"durationMs\\\":0}\"}", "exec_ms": 46}
+{"ts": "2026-10-14 02:37:40", "epoch": 1791934660.2368646, "type": "inbrisk_agent_failure", "tool": "computer_batch", "count": 1}
+{"ts": "2026-10-14 02:37:51", "epoch": 1791934671.1698644, "type": "inbrisk_agent_call", "tool": "computer_batch", "args": {}, "ai_ms": 10932}
+{"ts": "2026-10-14 02:37:51", "epoch": 1791934671.172635, "type": "inbrisk_mcp", "tool": "computer_batch", "result": "{\"status\": \"Failed\", \"error\": \"{\\\"error\\\":\\\"Malformed\\\",\\\"detail\\\":\\\"either steps, set, or read array is required\\\",\\\"durationMs\\\":0}\"}"}
+{"ts": "2026-10-14 02:37:51", "epoch": 1791934671.172635, "type": "inbrisk_mcp_result", "tool": "computer_batch", "result": "{\"status\": \"Failed\", \"error\": \"{\\\"error\\\":\\\"Malformed\\\",\\\"detail\\\":\\\"either steps, set, or read array is required\\\",\\\"durationMs\\\":0}\"}", "exec_ms": 2}
+{"ts": "2026-10-14 02:37:51", "epoch": 1791934671.172635, "type": "inbrisk_agent_failure", "tool": "computer_batch", "count": 2}
+{"ts": "2026-10-14 02:37:53", "epoch": 1791934673.2071025, "type": "cancelled"}
+{"ts": "2026-10-14 02:37:53", "epoch": 1791934673.4925013, "type": "session_end"}

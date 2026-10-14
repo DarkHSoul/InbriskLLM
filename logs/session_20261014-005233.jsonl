@@ -1,0 +1,3 @@
+{"ts": "2026-10-14 00:52:34", "epoch": 1791928354.6667058, "type": "session_start", "model": "qwen3:4b", "backend": "ollama", "shell_pid": 22184, "mcp_pid": 15444, "cwd": "C:\\Users\\Ahmet\\Documents\\InbriskLLM"}
+{"ts": "2026-10-14 00:52:34", "epoch": 1791928354.6667058, "type": "user", "text": "Acili pencereleri listeler misin? inbrisk_mcp aracini kullan."}
+{"ts": "2026-10-14 00:52:54", "epoch": 1791928374.8404472, "type": "session_end"}

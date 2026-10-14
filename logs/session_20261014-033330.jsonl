@@ -1,0 +1,4 @@
+{"ts": "2026-10-14 03:33:31", "epoch": 1791938011.1411314, "type": "tools_published", "count": 26}
+{"ts": "2026-10-14 03:33:31", "epoch": 1791938011.5814667, "type": "session_start", "model": "qwen3.5:2b", "backend": "ollama", "shell_pid": 12340, "mcp_pid": 20932, "cwd": "C:\\Users\\Ahmet\\Documents\\InbriskLLM"}
+{"ts": "2026-10-14 03:33:31", "epoch": 1791938011.5814667, "type": "user", "text": "Merhaba"}
+{"ts": "2026-10-14 03:33:46", "epoch": 1791938026.508325, "type": "session_end"}

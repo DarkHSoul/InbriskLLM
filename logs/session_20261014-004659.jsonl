@@ -1,0 +1,2 @@
+{"ts": "2026-10-14 00:47:00", "epoch": 1791928020.7356808, "type": "session_start", "model": "inbrisk-agent", "backend": "inbrisk-agent", "shell_pid": 4600, "mcp_pid": 25576, "cwd": "C:\\Users\\Ahmet\\Documents\\InbriskLLM"}
+{"ts": "2026-10-14 00:47:00", "epoch": 1791928020.7382767, "type": "session_end"}

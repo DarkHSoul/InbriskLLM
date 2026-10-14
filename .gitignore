@@ -1,18 +1,37 @@
-# Oturum ve log ciktilari - uretim kaydi, versiyonlanmaz
-logs/
-sessions/
+# Large model files
+ft_model/
+*.gguf
+*.safetensors
+*.bin
 
-# Python
+# Dataset files (large)
+dataset/dataset_full.jsonl
+dataset/*.rar
+dataset/*.zip
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
 
-# Windows artefaktlari
-nul
+# Backup files
+*.bak
+*.backup
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
 Thumbs.db
+nul
 
-# Benchmark kalintilari (modelin yanlislikla yazdigi dosyalar)
-notepad.txt
-notepad.exe
+# Logs
+*.log
 
-# Yedekler versiyon kontrolunde tutulur; ayri klasor
-# (ai_shell.py*.bak dosyalari bilerek commit EDILIR - mimari referans arsivi)
+# Environment
+.env
+.env.local

@@ -1,0 +1,8 @@
+{"ts": "2026-10-14 01:25:59", "epoch": 1791930359.156363, "type": "session_start", "model": "inbrisk-agent", "backend": "inbrisk-agent", "shell_pid": 21480, "mcp_pid": 12324, "cwd": "C:\\Users\\Ahmet\\Documents\\InbriskLLM"}
+{"ts": "2026-10-14 01:25:59", "epoch": 1791930359.1579053, "type": "user", "text": "!Write-Output 'test-ps-direct'"}
+{"ts": "2026-10-14 01:25:59", "epoch": 1791930359.1579053, "type": "shell_direct", "command": "Write-Output 'test-ps-direct'"}
+{"ts": "2026-10-14 01:25:59", "epoch": 1791930359.1732311, "type": "slash", "command": "/save test_session"}
+{"ts": "2026-10-14 01:25:59", "epoch": 1791930359.1752818, "type": "slash", "command": "/sessions"}
+{"ts": "2026-10-14 01:25:59", "epoch": 1791930359.179361, "type": "slash", "command": "/resume test_session"}
+{"ts": "2026-10-14 01:25:59", "epoch": 1791930359.210516, "type": "user", "text": "cikis"}
+{"ts": "2026-10-14 01:25:59", "epoch": 1791930359.210516, "type": "session_end"}

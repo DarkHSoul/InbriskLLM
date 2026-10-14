@@ -1,0 +1,10 @@
+{"ts": "2026-10-14 00:47:10", "epoch": 1791928030.7698667, "type": "session_start", "model": "inbrisk-agent", "backend": "inbrisk-agent", "shell_pid": 12424, "mcp_pid": 27184, "cwd": "C:\\Users\\Ahmet\\Documents\\InbriskLLM"}
+{"ts": "2026-10-14 00:47:10", "epoch": 1791928030.771397, "type": "slash", "command": "/tools"}
+{"ts": "2026-10-14 00:47:10", "epoch": 1791928030.773468, "type": "user", "text": "!Write-Output \"gocudur-cift\""}
+{"ts": "2026-10-14 00:47:10", "epoch": 1791928030.773468, "type": "shell_direct", "command": "Write-Output \"gocudur-cift\""}
+{"ts": "2026-10-14 00:47:10", "epoch": 1791928030.7891574, "type": "user", "text": "hangi pencereler su an acik?"}
+{"ts": "2026-10-14 00:47:45", "epoch": 1791928065.562744, "type": "agent_turn", "model": "inbrisk-agent", "text": "hangi pencereler su an acik?", "duration_s": 34.77}
+{"ts": "2026-10-14 00:47:45", "epoch": 1791928065.564442, "type": "slash", "command": "/backend"}
+{"ts": "2026-10-14 00:47:45", "epoch": 1791928065.565476, "type": "slash", "command": "/log"}
+{"ts": "2026-10-14 00:47:45", "epoch": 1791928065.566635, "type": "user", "text": "cikis"}
+{"ts": "2026-10-14 00:47:45", "epoch": 1791928065.566635, "type": "session_end"}
