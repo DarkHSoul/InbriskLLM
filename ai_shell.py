@@ -533,7 +533,8 @@ class TaskState:
     def __init__(self):
         self.opened = {}      # hwnd.lower() -> {hwnd, pid, title}
         self.calls = {}       # "tool|args" -> kac kez cagrildi
-        self.observe = {}     # "tool|args" -> son gozlem kimligi
+        self.observe = {}     # "tool|args" -> son gozlem parmak izi
+        self.emergency = False   # Ctrl+Alt+Pause basildi; yalnizca kullanici acar
 
     @staticmethod
     def _extract(obj):
@@ -721,6 +722,17 @@ def confirm_shell_command(segment):
                    f"  {segment}\nCalistirilsin mi? [e/h]: ")
 
 
+def confirm_dangerous_action(reason):
+    """TEHLIKELI eylem onayi — yalnizca yerel kullanici verebilir.
+
+    SafetyPolicy: AutoConfirm ve istek duzeyindeki onaylayicilar model
+    tarafindan taklit edilebilir, bu yuzden DANGEROUS sinifinda hicbiri
+    dikkate alinmaz. Yalnizca buradaki yerel istem yaniti gecerlidir.
+    """
+    return _yes_no("\n[TEHLIKELI EYLEM — yalnizca sen onaylayabilirsin]\n"
+                   f"  {reason}\nOnayliyor musun? [e/h]: ")
+
+
 _VOLATILE_FP = re.compile(
     r"[\"']?(?:base)?observationId[\"']?\s*:?\s*[\"']?\d+|"
     r"[\"']?snapshotId[\"']?\s*:?\s*[\"']?[\w-]+|"
@@ -862,18 +874,178 @@ def verify_action_result(name, args, result):
     return ("\n" + "\n".join("- " + n for n in notes)) if notes else ""
 
 
+# --- Guvenlik siniflandirmasi ------------------------------------------------
+# inbrisk/src/Inbrisk.Runtime/SafetyPolicy.cs ve Core/Agent.cs'ten tasindi.
+# Ucuncu yol TEsis etti: iki degerli engelleme degil, uc yonlu
+# ALLOW / CONFIRM / DENY siniflandirmasi. DENY her zaman son karardir.
+
+ALLOW, CONFIRM, DENY = "ALLOW", "CONFIRM", "DENY"
+
+# Bir aracin hedefine yazmak/keypress = icinde oldugu kabuk penceresine
+# yazmak demektir; bu bir UI otomasyonu degil, keyfi komut yurutmedir.
+DANGEROUS_TARGET_PROCESSES = {
+    "cmd", "cmd.exe", "powershell", "powershell.exe", "pwsh", "pwsh.exe",
+    "wt", "wt.exe", "windowsterminal", "windowsterminal.exe",
+    "conhost", "conhost.exe", "wsl", "wsl.exe", "bash", "bash.exe",
+    "sh", "sh.exe", "zsh", "zsh.exe", "fish", "fish.exe", "nu", "nu.exe",
+    "python", "python.exe", "pythonw", "pythonw.exe", "node", "node.exe",
+    "wscript", "wscript.exe", "cscript", "cscript.exe", "mshta", "mshta.exe",
+    "rundll32", "rundll32.exe", "regsvr32", "regsvr32.exe",
+}
+
+# Yikici kapanis akorlari (SafetyPolicy.IsClosingChord)
+CLOSING_CHORDS = (("alt", "f4"), ("ctrl", "w"), ("ctrl", "f4"), ("ctrl", "q"))
+
+
+def is_dangerous_action(name, args):
+    """Eylemin TEK YERLI, YIKICI bir komut kanali mi?
+
+    SafetyPolicy.IsDangerous ile ayni iki kural:
+      1) Kabuk/terminal penceresine yazmak veya tus basmak = keyfi komut
+      2) Yikici kapanis akoru (Alt+F4, Ctrl+W, Ctrl+F4, Ctrl+Q)
+    Bunlar icin onay parametresi YOK sayilir; yalnizca yerel insan
+    hareketi (kullanicinin onayi) gecerlidir.
+    """
+    if name in ("computer_type", "computer_hotkey", "computer_do",
+                "computer_run", "computer_batch"):
+        tgt = str((args.get("app") or args.get("process")
+                   or args.get("target") or "")).lower()
+        stem = tgt.rsplit("\\", 1)[-1].rsplit("/", 1)[-1]
+        if stem in DANGEROUS_TARGET_PROCESSES:
+            return (f"'{stem}' bir kabuk/terminal penceresidir; icine yazmak "
+                    "keyfi komut yurutmedir. Kullanici onayi olmadan yapma.")
+    if name in ("computer_hotkey", "computer_do", "computer_run"):
+        key = str(args.get("key") or "").strip().lower()
+        mods = args.get("modifiers") or args.get("keys")
+        if isinstance(mods, str):
+            mods = [mods]
+        modset = {str(m).strip().lower() for m in (mods or []) if m}
+        for m in list(modset):
+            modset.update(p.strip().lower() for p in m.split("+") if p.strip())
+        if "menu" in modset:
+            modset.add("alt")
+        if "+" in key:
+            parts = [p.strip().lower() for p in key.split("+") if p.strip()]
+            if parts:
+                modset.update(parts[:-1])
+                key = parts[-1]
+        for combo in CLOSING_CHORDS:
+            if key == combo[1] and combo[0] in modset:
+                return (f"'{combo[0]}+{combo[1]}' yikici bir kapanis akorudur; "
+                        "kullanici onayi olmadan gonderme.")
+    return None
+
+
+# --- OutcomeKind siniflandirmasi --------------------------------------------
+# inbrisk/src/Inbrisk.Core/Agent.cs OutcomeKind ile birebir eslesir.
+# Sunucu bize makine-okunur olarak "bu hata terminal mi, gecici mi" diyor;
+# stall kararini fingerprint TEK BASINA vermemeli.
+
+OUTCOME_TERMINAL = {
+    "PolicyDenied", "ConfirmationDenied", "ConfirmationRequired",
+    "EmergencyStopped", "Malformed", "AmbiguousTarget", "AmbiguousApplication",
+    "SecureDesktop", "TargetElevated", "Cancelled", "InterruptedByDialog",
+    "PausedForHuman", "DeliveryUnsupported",
+}
+OUTCOME_RETRYABLE = {
+    "TargetNotFound", "Stale", "StaleFrame", "WindowLost", "Timeout",
+    "InputRejected", "CaptureUnavailable", "TargetOffscreen",
+    "TargetOnDifferentScreen", "ConcurrencyConflict", "Unverified",
+    "ObservedChange",
+}
+OUTCOME_NOPROGRESS = {"NoProgress", "Unverified"}
+
+# Bu sonuclar modele ASLA yeniden denenmemeli; yeniden denemek reddedilmemis
+# bir eslesmeyi zorlama ya da guvenlik kapisini atlamaya calismaktir.
+_TERMINAL_GUIDE = {
+    "PolicyDenied": "guvenlik politikasi reddi — SUNUCU KARARI SON, atlama.",
+    "ConfirmationDenied": "onay reddedildi — sormadan yeniden deneme.",
+    "ConfirmationRequired": ("onay gerekiyor — yalnizca yerel kullanici "
+                             "onaylayabilir, sen onaylayamazsin."),
+    "EmergencyStopped": ("acil durdurma aktif. YALNIZCA yerel kullanici "
+                         "Ctrl+Alt+Shift+Pause ile devam ettirebilir; "
+                         "sen devam ettiremezsin. Dur ve kullaniciya bildir."),
+    "Malformed": "istek bicimi yanlis — ayni sekilde tekrar etme, duzelt.",
+    "AmbiguousTarget": ("birden fazla guclu aday eslesti; cozumleyici tahmin "
+                        "etmeyi reddeder. Daha spesifik secici kullan."),
+    "AmbiguousApplication": "birden fazla uygulama eslesti; adaylardan netlestir.",
+    "InterruptedByDialog": ("beklenmeyen bir modal durdu. Guvenlik/erisim "
+                            "pencerelerine ASLA kendin dokunma; kullaniciya bildir."),
+    "PausedForHuman": "insan devralma icin duraklatildi.",
+    "SecureDesktop": "gizli masaustune erisim reddedildi.",
+    "TargetElevated": "hedef yonetici yetkisiyle calisiyor; dokunma.",
+    "Cancelled": "calisma iptal edildi.",
+}
+
+
+def classify_outcome(result):
+    """MCP ciktisindan OutcomeKind sinifini ve yonlendirmeyi cikarir.
+
+    Doner: (kind, safety, guidance)
+      safety -> 'DONE' | 'RETRY' | 'NOPROGRESS' | 'TERMINAL'
+    """
+    raw = strip_untrusted(result).strip()
+    kind = ""
+    if raw[:1] == "{":
+        try:
+            obj = json.loads(raw)
+            if isinstance(obj, dict):
+                kind = str(obj.get("status") or obj.get("error") or "")
+        except Exception:
+            kind = ""
+    if not kind:
+        low = raw.lower()
+        for cand in ("emergencystopped", "policydenied", "interruptedbydialog",
+                     "malformed", "ambiguoustarget", "stale", "noprogess"):
+            if cand in low:
+                kind = ("EmergencyStopped" if cand == "emergencystopped"
+                        else cand.capitalize())
+                break
+
+    if kind in OUTCOME_TERMINAL:
+        return kind, "TERMINAL", _TERMINAL_GUIDE.get(kind, f"{kind} — sunucu karari son.")
+    if kind in OUTCOME_NOPROGRESS:
+        return kind, "NOPROGRESS", ""
+    if kind in OUTCOME_RETRYABLE:
+        return kind, "RETRY", ""
+    if mcp_result_failed(raw):
+        return kind or "Failed", "RETRY", ""
+    return kind or "Verified", "DONE", ""
+
+
 def execute_mcp_guarded(mcp, name, args, task_state, logger=None,
-                        confirm_close=None, confirm_close_any=None):
+                        confirm_close=None, confirm_close_any=None,
+                        confirm_dangerous=None):
     """TEK arac yurutme kapisi.
 
     Sirasi: bilinmeyen alanlari temizle -> semaya karsi dogrula ->
-    guvenlik yetkisini denetle -> calistir -> sonucu kaydet.
+    TEHLIKELI eylem denetimi (SafetyPolicy.IsDangerous) -> pencere yetkisi ->
+    calistir -> sonucu OutcomeKind ile siniflandir.
 
     Model bu kapidan gecmeden HICBIR MCP araci calismaz. Dogru JSON
     uretmek modelin isi; o JSON'un Windows'ta ne yapacagi bizim isimiz.
     """
     args = normalize_tool_args(name, args)
     validate_tool_call(name, args)
+
+    # --- ACIL DURDURMA: sunucu tarafindan kilitli, ajan acamaz ---
+    # SafetyPolicy: EmergencyStopped bir cekirdek mutex ile tutulur; model
+    # dosya silerek/ozellestirerek cozemez. Yalnizca yerel kullanici
+    # Ctrl+Alt+Shift+Pause ile devam ettirir.
+    if task_state.emergency:
+        raise ToolRejected(
+            "ACIL DURDURMA aktif — hicbir eylem calistirilamiyor. "
+            "Yalnizca yerel kullanici Ctrl+Alt+Shift+Pause ile devam "
+            "ettirebilir; sen devam ettiremezsin. Kullaniciya bildir ve dur.")
+
+    # --- TEHLIKELI EYLEM: yalnizca yerel kullanici onaylayabilir ---
+    danger = is_dangerous_action(name, args)
+    if danger:
+        if confirm_dangerous is None or not confirm_dangerous(danger):
+            raise ToolRejected(
+                f"TEHLIKELI EYLEM REDDEDILDI: {danger}",
+                hint="Bunu yalnizca yerel kullanici onaylayabilir; "
+                     "alternatif bir yol dene veya kullaniciya sor.")
 
     if name == "computer_close_window":
         verdict = check_window_close(args, task_state, confirm=confirm_close)
@@ -896,25 +1068,42 @@ def execute_mcp_guarded(mcp, name, args, task_state, logger=None,
     result = mcp.call_tool(name, args)
     task_state.note_result(name, result)
 
-    # Gozlem araclarinda ayni cagri meşrudur — AGER ekran gercekten degismisse.
-    # Bu yuzden tekrar sayaci yalnizca gozlem kimligi SABIT kaldiginda artar.
-    if name in OBSERVE_TOOLS:
+    # --- UC KANALLI ILERLEME DENETIMI ---
+    # 1) arac sonucu (OutcomeKind)  2) ekran fingerprint'i  3) terminal sonuc
+    # Stall sayaci YALNIZCA ikisi de ilerleme gostermediginde artar; sunucu
+    # bir seyin NoProgress/terminal OLDUGUNU soylerse buna guveniriz.
+    kind, safety, guidance = classify_outcome(result)
+    if safety == "TERMINAL":
+        task_state.calls[sig] = 0          # terminal sonuc ilerlemedir, tekrar sayma
+    elif name in OBSERVE_TOOLS:
         fp = observation_fingerprint(result)
         if fp and fp != task_state.observe.get(sig):
-            task_state.calls[sig] = 1
+            task_state.calls[sig] = 1      # ekran gercekten degisti
             task_state.observe[sig] = fp
+    elif safety == "NOPROGRESS":
+        pass                             # sayac artmaya devam eder
+    elif safety == "RETRY" or kind == "Verified":
+        task_state.calls[sig] = 0
+
     if name == "computer_close_window" and not mcp_result_failed(result):
         task_state.forget(args.get("hwnds")
                           or ([args["hwnd"]] if args.get("hwnd") else []))
     if logger:
         logger.event("tool_result", tool=name, args=args, result=result[:2000],
                      duration_s=round(time.time() - t0, 2))
+        logger.event("outcome", tool=name, outcome=kind, safety=safety)
     # Dogrulama notu: istenen ile donen ortusmuyorsa modele soyle.
     # (Guvenlik denetimi degil — BU runtime'in dogrulama sorumlulugu.)
     check = verify_action_result(name, args, result)
     if check:
         result += check
         logger.event("result_verified", tool=name, note=check[:400])
+    # Terminal sonuc: modele ne yapmayacagini ACIKCA soyle. Sunucu karari
+    # son; ayni sekilde yeniden denemek yanlis.
+    if safety == "TERMINAL" and guidance:
+        result += (f"\n- SUNUCU KARARI ({kind}): {guidance}")
+        if kind == "EmergencyStopped":
+            task_state.emergency = True
     # Gozlem araclari modele duz metin donmez; kesiklilik isaretlenir.
     if name in OBSERVE_TOOLS and not mcp_result_failed(result):
         result = process_observation(result, name)
@@ -1799,7 +1988,8 @@ def _agent_turn_inner(model, messages, shell, logger, cfg, max_iters=8, mcp=None
                     result, t_args = execute_mcp_guarded(
                         mcp, t_name, t_args, task_state, logger=logger,
                         confirm_close=confirm_close_window,
-                        confirm_close_any=confirm_close_any)
+                        confirm_close_any=confirm_close_any,
+                        confirm_dangerous=confirm_dangerous_action)
                     print(f"\n\033[95m⚡ [MCP] {t_name}\033[0m -> "
                           f"{json.dumps(t_args, ensure_ascii=False)[:400]}")
                     print(f"\033[90m{result[:400]}\033[0m")
@@ -1870,7 +2060,8 @@ def _agent_turn_inner(model, messages, shell, logger, cfg, max_iters=8, mcp=None
                                 mcp, t_name, fixed["arguments"], task_state,
                                 logger=logger,
                                 confirm_close=confirm_close_window,
-                                confirm_close_any=confirm_close_any)
+                                confirm_close_any=confirm_close_any,
+                                confirm_dangerous=confirm_dangerous_action)
                             print(f"\n\033[95m⚡ [MCP] {t_name}\033[0m -> "
                                   f"{json.dumps(t_args, ensure_ascii=False)[:400]}")
                             print(f"\033[90m{result[:400]}\033[0m")
