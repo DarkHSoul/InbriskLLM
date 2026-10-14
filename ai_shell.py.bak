@@ -1,0 +1,970 @@
+# ai_shell.py — Tek terminalde calisan, tool-call destekli yerel AI agent.
+# Kalici bir PowerShell surecine baglanir; LLM (Ollama) komut uretir,
+# komut ayni shell'de icra edilir, cikti modele geri beslenir.
+#
+# Kullanim:  python ai_shell.py [--model qwen3:4b] [--timeout 60]
+
+import argparse
+import json
+import msvcrt
+import os
+import queue
+import base64
+import re
+import shutil
+import subprocess
+import sys
+import threading
+import time
+import urllib.request
+
+MARK = "__AI_SHELL_DONE_9f2c__"
+OLLAMA_URL = "http://localhost:11434/api/chat"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SESSIONS_DIR = os.path.join(BASE_DIR, "sessions")
+LOGS_DIR = os.path.join(BASE_DIR, "logs")
+
+
+class Logger:
+    """Oturum olaylarini JSONL olarak diske yazar (her satir bir olay)."""
+
+    def __init__(self, logdir):
+        os.makedirs(logdir, exist_ok=True)
+        self.path = os.path.join(
+            logdir, time.strftime("session_%Y%m%d-%H%M%S") + ".jsonl")
+        self.f = open(self.path, "a", encoding="utf-8")
+
+    def event(self, kind, **data):
+        rec = {"ts": time.strftime("%Y-%m-%d %H:%M:%S"),
+               "epoch": time.time(), "type": kind}
+        rec.update(data)
+        self.f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        self.f.flush()
+
+    def close(self):
+        try:
+            self.f.close()
+        except Exception:
+            pass
+
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "run_shell",
+            "description": (
+                "Kalici PowerShell oturumunda bir komut calistirir ve ciktisini dondurur. "
+                "Oturum komutlar arasinda durumunu korur (cd, degiskenler vs)."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "description": "Calistirilacak tek satirlik PowerShell komutu.",
+                    }
+                },
+                "required": ["command"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "inbrisk",
+            "description": (
+                "Windows masaustunu otomatiklestirir: pencere/UI gozlemleme, "
+                "element bulma, tiklama, yazma, uygulama acma, cok adimli planlar. "
+                "Kalici Rust runtime'a baglanir, cok hizlidir. "
+                "Sorgu icin 'command', aksiyon icin 'plan' alanini kullan."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "description": (
+                            "YALNIZ sorgu alt komutlari (pipe yok): windows, "
+                            'observe --window "ad" --json, find --role rol --name ad --all, '
+                            "read <id> --json, status. "
+                            "UI aksiyonlari icin 'plan' alanini kullan."
+                        ),
+                    },
+                    "plan": {
+                        "type": "object",
+                        "description": (
+                            'Aksiyon plani JSON objesi: {"steps":[{...}]}. '
+                            'Ornek: {"steps":[{"action":"launch","app":"calc"},'
+                            '{"action":"sleep","ms":500},{"action":"type","text":"123"}]}. '
+                            "Adimlar: launch{app}, focus{target:{window:{name}}}, "
+                            "invoke/click{target:{role,name}}, type{text}, "
+                            "key{keys:[\"ctrl\",\"s\"] veya [\"enter\"]}, set_value{target,value}, sleep{ms}, "
+                            "wait{until,selector,state}, close{target:{window:{name}}}"
+                        ),
+                    },
+                },
+            },
+        },
+    },
+]
+
+SYSTEM_PROMPT = (
+    "Sen Windows uzerinde kalici bir PowerShell oturumuna bagli bir yardimci agentsin. "
+    "Tool cagrilari arasinda uzun aciklama veya dusunme metni yazma; dogrudan tool cagir. "
+    "Kullanicidan izin isteme; hata alirsan hatayi okuyup duzelterek gorev bitene kadar devam et. "
+    "Kullanici Turkce konusur; sen de Turkce yanit ver. "
+    "Sistem bilgisi, dosya islemi veya komut gerektiren her istek icin run_shell tool'unu cagir. "
+    "Bilmedigin veya dogrulayamadigin bir sey uydurma; emin olmak icin komut calistir. "
+    "Tool ciktisinda STATUS=False gorursen veya hata mesaji varsa, komutu duzeltip tekrar dene. "
+    "STATUS=True olmadan kullaniciya asla kesin sonuc bildirme. "
+    "Tarih/saat soruldugunda Ingilizce gun/ay adlarini kendin cevirmeye calisma; "
+    "run_shell ile su komutu calistir: "
+    "[datetime]::Now.ToString('HH:mm:ss dddd, dd MMMM yyyy', [cultureinfo]'tr-TR') "
+    "Tool ciktisi geldikten sonra kullaniciya kisa ve net bir Turkce ozet ver. "
+    "Yikici komutlardan (dosya silme, format, kapatma) kacinin; gerekiyorsa once kullaniciya sor. "
+    "Masaustu/pencere/gorsel otomasyon isteklerinde shell komutu yazmak yerine inbrisk tool'unu kullan. "
+    "Sorgu icin command alani, aksiyon icin plan alanini kullan; ikisini ayni cagrida verme. "
+    "Aksiyonlar icin JSON'u ASLA shell komut satiri veya mesaj metni olarak yazma — "
+    "her zaman inbrisk tool'unu plan argumaniyla CAGIR; plan JSON'u arguman olarak gider, "
+    "sistem dosyaya yazip 'inbrisk-cli run --file' ile calistirir. "
+    "inbrisk ciktisi 'no match' veya bos donerse filtreyi kaldirarak/daha basit argumanla tekrar dene. "
+    "Ornek tam plan — klasor acmak: "
+    "{\"steps\":[{\"action\":\"launch\",\"app\":\"explorer\",\"args\":[\"C:\\\\Users\\\\Ahmet\\\\Documents\"],"
+    "\"timeout_ms\":20000}]}. "
+    "Yeniden adlandirma: klasoru sec + key{keys:['f2']} + type{text:'yeni ad'} + key{keys:['enter']}. "
+    "Var olmayan action uydurma; yalnizca tool tanimindaki adimlari kullan. "
+    "Aksiyon/plan semasindan emin degilsen once "
+    "C:\\Users\\Ahmet\\Documents\\inbrisk\\.agents\\skills\\inbrisk\\references\\ "
+    "klasorundeki .md dosyalarini run_shell ile oku. "
+    "inbrisk ciktisinda 'RuntimeUnavailable'/'no Inbrisk runtime' gorursen once "
+    "run_shell ile 'Start-Process inbrisk' calistir (PATH'te kurulu; "
+    "dosya yolu uydurma), birkaç saniye bekleyip plani tekrar dene. "
+    "Komutlari birlestirmek icin '&&' yerine ';' kullan veya ayri cagrilar gonder. "
+    "Kullanicinin bahsettigi klasor/dosya adlarini uydurma; emin degilsen once "
+    "run_shell ile gercek adlari listele (Get-ChildItem). "
+    "Bir tool hata dondururse onu 'yapildi' gibi anlatma; hatayi duzeltip tekrar dene. "
+    "Korunan sureclere (Antigravity.exe, Code.exe, python.exe, node.exe, Hermes.exe) dokunma."
+)
+
+INBRISK_CMDS = {
+    "windows", "observe", "find", "read", "status", "ping", "events",
+    "doctor", "endpoint", "cancel", "terminal", "run", "act",
+    "fast-path", "skill", "help",
+}
+
+# Plan/komut yazip tool cagirmadan duran modelleri yakalayan desen
+PLAN_IN_TEXT = re.compile(
+    r'"action"|"steps"|inbrisk-cli|run_shell|```\s*(json|powershell|bash)',
+    re.IGNORECASE,
+)
+
+DANGEROUS = re.compile(
+    r"\bremove-item\b|\brm\s+-|\bdel\b|\berase\b|\bformat-[a-z]|\bformat\s+[a-z]:|"
+    r"\bshutdown\b|\brestart-computer\b|\bstop-computer\b|\bdiskpart\b|"
+    r"\bbcdedit\b|\breg\s+delete\b|\brd\s+/s",
+    re.IGNORECASE,
+)
+
+
+class PersistentShell:
+    """Tek bir powershell.exe sureci; marker ile cikti sonu tespit edilir."""
+
+    def __init__(self, timeout=60):
+        self.timeout = timeout
+        self._spawn()
+
+    def _spawn(self):
+        # pwsh (PS7) varsa onu kullan: &&, varsayilan UTF-8 gibi
+        # iyilestirmeler gelir; yoksa powershell.exe (5.1) ile devam
+        exe = shutil.which("pwsh") or "powershell.exe"
+        self.proc = subprocess.Popen(
+            [
+                exe, "-NoProfile", "-NoLogo", "-NonInteractive",
+                "-ExecutionPolicy", "Bypass", "-Command", "-",
+            ],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            bufsize=1,
+        )
+        self.q = queue.Queue()
+        threading.Thread(target=self._reader, daemon=True).start()
+        # Turkce karakterler icin UTF-8 cikti kodlamasi
+        # (InputEncoding pipe'da islemedigi icin ASCII-disi komutlar
+        # run() icinde base64 ile sarmalanir)
+        self._send_raw("[Console]::OutputEncoding=[Text.Encoding]::UTF8")
+        # pwsh ANSI stillendirmesini kapat — tool ciktisi temiz kalsin
+        self._send_raw("if ($PSStyle) { $PSStyle.OutputRendering='PlainText' }")
+        self.run("$PSVersionTable.PSVersion.Major", quiet=True)
+
+    def _reader(self):
+        for line in self.proc.stdout:
+            self.q.put(line)
+
+    def _send_raw(self, text):
+        self.proc.stdin.write(text + "\n")
+        self.proc.stdin.flush()
+
+    def run(self, command, quiet=False):
+        """Komutu gonder; cikti + $? durumu marker gorunceye kadar toplanir."""
+        send = command
+        if not command.isascii():
+            # stdin pipe OEM codepage ile decode ediliyor; Turkce vb.
+            # karakterleri base64 ile tasiyip PS icinde UTF-8 cozuyoruz
+            b64 = base64.b64encode(command.encode("utf-8")).decode("ascii")
+            send = ("Invoke-Expression ([Text.Encoding]::UTF8.GetString("
+                    f"[Convert]::FromBase64String('{b64}')))")
+        self._send_raw(
+            f"{send}\n$__ok = $?\n"
+            f"Write-Output \"STATUS=$__ok\"\nWrite-Output '{MARK}'"
+        )
+        out = []
+        ok = None
+        t0 = time.time()
+        while True:
+            try:
+                line = self.q.get(timeout=0.05)
+            except queue.Empty:
+                if time.time() - t0 > self.timeout:
+                    return f"[TIMEOUT: komut {self.timeout}s icinde bitmedi]"
+                continue
+            if MARK in line:
+                break
+            if line.startswith("STATUS="):
+                ok = line.strip() == "STATUS=True"
+                continue
+            out.append(line)
+        result = "".join(out).strip()
+        if not quiet:
+            print(f"\n\033[96m$ {command}\033[0m")
+            if result:
+                print(result)
+        status = "True" if ok else "False"
+        return f"STATUS={status}\n{result if result else '(cikti yok)'}"
+
+    def close(self):
+        try:
+            self.proc.terminate()
+        except Exception:
+            pass
+
+    def reset(self):
+        """Iptal sonrasi taze shell: yari kalan komut ciktisinin
+        marker desync yapmasini onler (durum kaybi kabul edilir)."""
+        self.close()
+        self._spawn()
+
+
+def ollama_chat_stream(model, messages):
+    """Ollama /api/chat NDJSON akisini chunk chunk uretir."""
+    body = json.dumps({
+        "model": model,
+        "messages": messages,
+        "tools": TOOLS,
+        "stream": True,
+        "think": False,  # qwen3 dusunme modunu kapat — hiz icin
+        "options": {"temperature": 0.3},  # tool-call determinizmi icin dusuk
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        OLLAMA_URL, data=body, headers={"Content-Type": "application/json"}
+    )
+    with urllib.request.urlopen(req, timeout=300) as resp:
+        for raw in resp:
+            if not raw.strip():
+                continue
+            chunk = json.loads(raw)
+            yield chunk
+            if chunk.get("done"):
+                break
+
+
+def _openai_stream(model, messages, base_url, api_key):
+    """OpenAI-uyumlu /chat/completions SSE akisi.
+
+    Hermes proxy, llama.cpp server ve herhangi bir OpenAI-uyumlu
+    endpoint icin calisir. Normalize chunk'lar uretir:
+    {"delta": str} / {"tool_calls": [...]} / {"done": True}
+    """
+    body = json.dumps({
+        "model": model,
+        "messages": messages,
+        "tools": TOOLS,
+        "stream": True,
+        "temperature": 0.3,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        base_url.rstrip("/") + "/chat/completions",
+        data=body,
+        headers={"Content-Type": "application/json",
+                 "Authorization": f"Bearer {api_key or 'local'}"},
+    )
+    pending = {}  # tool_call index -> parcali arguman akisi icin biriktirici
+    with urllib.request.urlopen(req, timeout=300) as resp:
+        for raw in resp:
+            line = raw.decode("utf-8", "replace").strip()
+            if not line.startswith("data:"):
+                continue
+            data = line[5:].strip()
+            if data == "[DONE]":
+                break
+            try:
+                chunk = json.loads(data)
+            except json.JSONDecodeError:
+                continue
+            for ch in chunk.get("choices", []):
+                d = ch.get("delta") or {}
+                if d.get("content"):
+                    yield {"delta": d["content"]}
+                for tc in d.get("tool_calls") or []:
+                    slot = pending.setdefault(
+                        tc.get("index", 0), {"id": "", "name": "", "args": ""})
+                    if tc.get("id"):
+                        slot["id"] = tc["id"]
+                    f = tc.get("function") or {}
+                    if f.get("name"):
+                        slot["name"] += f["name"]
+                    if f.get("arguments"):
+                        slot["args"] += f["arguments"]
+    if pending:
+        calls = [{
+            "id": s["id"] or f"call_{i}",
+            "type": "function",
+            "function": {"name": s["name"], "arguments": s["args"]},
+        } for i, (_, s) in enumerate(sorted(pending.items()))]
+        yield {"tool_calls": calls}
+    yield {"done": True}
+
+
+HERMES_STATE = os.path.join(
+    os.environ.get("LOCALAPPDATA", ""),
+    "hermes", "runtimes", "llamacpp", "server.json")
+
+
+def wait_http(url, headers=None, timeout=3):
+    """URL yanit veriyorsa True."""
+    try:
+        req = urllib.request.Request(url, headers=headers or {})
+        urllib.request.urlopen(req, timeout=timeout)
+        return True
+    except Exception:
+        return False
+
+
+def ensure_ollama(timeout=30):
+    """Ollama yanit vermiyorsa 'ollama serve'i ayrik surec olarak
+    baslatip hazir olana kadar bekler."""
+    if wait_http("http://localhost:11434/api/tags"):
+        return True
+    exe = shutil.which("ollama")
+    if not exe:
+        print("[uyari] ollama.exe PATH'te yok — once Ollama'yi kur")
+        return False
+    print("[ollama kapali — baslatiliyor...]")
+    subprocess.Popen(
+        [exe, "serve"],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        stdin=subprocess.DEVNULL,
+        creationflags=getattr(subprocess, "DETACHED_PROCESS", 0)
+        | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
+    )
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        if wait_http("http://localhost:11434/api/tags"):
+            print(f"[ollama hazir ({int(time.time() - t0)}s)]")
+            return True
+        time.sleep(0.5)
+    print(f"[uyari] ollama {timeout}s icinde yanit vermedi")
+    return False
+
+
+def resolve_hermes(args):
+    """Hermes managed llama-server'in server.json'undan endpoint+key oku."""
+    try:
+        with open(HERMES_STATE, encoding="utf-8-sig") as f:
+            state = json.load(f)
+        args.base_url = state["base_url"]
+        args.api_key = state["api_key"]
+        args.backend = "openai"
+        return True
+    except Exception as e:
+        print(f"[hermes runtime bulunamadi: {e} — "
+              f"Hermes > Providers > Local Models'dan runtime kur]")
+        return False
+
+
+def chat_stream(model, messages, cfg):
+    """Backend'e gore normalize chunk akisi:
+    {"delta": str} / {"tool_calls": [...]} / {"done": True}"""
+    if cfg.backend == "openai":
+        yield from _openai_stream(model, messages, cfg.base_url, cfg.api_key)
+    else:
+        for chunk in ollama_chat_stream(model, messages):
+            m = chunk.get("message") or {}
+            yield {"delta": m.get("content") or "",
+                   "tool_calls": m.get("tool_calls"),
+                   "done": chunk.get("done")}
+
+
+class _Spinner:
+    """Model yaniti beklerken konsolda canli gosterge — sessiz donma hissi onler."""
+
+    CHARS = "|/-\\"
+
+    def __init__(self):
+        self._stop = threading.Event()
+        self._t = None
+
+    def start(self, label="model yanitliyor"):
+        self._stop.clear()
+        self._t0 = time.time()
+        self._i = 0
+        self._t = threading.Thread(target=self._run, args=(label,), daemon=True)
+        self._t.start()
+
+    def _run(self, label):
+        while not self._stop.is_set():
+            c = self.CHARS[self._i % len(self.CHARS)]
+            self._i += 1
+            sys.stdout.write(f"\r{c} {label} {int(time.time() - self._t0)}s")
+            sys.stdout.flush()
+            self._stop.wait(0.12)
+        sys.stdout.write("\r" + " " * 50 + "\r")
+        sys.stdout.flush()
+
+    def stop(self):
+        self._stop.set()
+        if self._t:
+            self._t.join(timeout=1)
+
+
+class _ThinkFilter:
+    """Akan metindeki <think>...</think> bloklarini gizler.
+
+    Tag'in kendisi token sinirlarina bolebilecegi icin olasi kismi
+    tag baslangiclarini buffer'da tutar.
+    """
+
+    OPEN, CLOSE = "<think>", "</think>"
+
+    def __init__(self):
+        self.in_think = False
+        self.buf = ""
+
+    def feed(self, s):
+        self.buf += s
+        out = ""
+        while True:
+            if not self.in_think:
+                i = self.buf.find(self.OPEN)
+                if i == -1:
+                    keep = self._partial_tail(self.OPEN)
+                    out += self.buf[: len(self.buf) - keep]
+                    self.buf = self.buf[len(self.buf) - keep:]
+                    break
+                out += self.buf[:i]
+                self.buf = self.buf[i + len(self.OPEN):]
+                self.in_think = True
+            else:
+                j = self.buf.find(self.CLOSE)
+                if j == -1:
+                    self.buf = self.buf[-len(self.CLOSE) + 1:]
+                    break
+                self.buf = self.buf[j + len(self.CLOSE):]
+                self.in_think = False
+        return out
+
+    def flush(self):
+        out = "" if self.in_think else self.buf
+        self.buf = ""
+        return out
+
+    def _partial_tail(self, tag):
+        for k in range(len(tag) - 1, 0, -1):
+            if self.buf.endswith(tag[:k]):
+                return k
+        return 0
+
+
+def confirm_dangerous(command):
+    print(f"\n\033[91m[DIKKAT] Yikici olabilecek komut: {command}\033[0m")
+    ans = input("Calistirilsin mi? [e/H] ").strip().lower()
+    return ans in ("e", "evet", "y", "yes")
+
+
+def _tool_reply(messages, tc, content):
+    """Tool sonucu mesaji: OpenAI-uyumlu endpoint'ler tool_call_id ve
+    name ister; Ollama fazladan alanlari tolere eder."""
+    m = {"role": "tool", "content": content, "name": tc.get("function", {}).get("name", "")}
+    if tc.get("id"):
+        m["tool_call_id"] = tc["id"]
+    messages.append(m)
+
+
+def agent_turn(model, messages, shell, logger, cfg, max_iters=8):
+    """Tur sarmalayici: Ctrl+C uretimi/tool icrasini iptal eder,
+    programi kapatmaz — prompt'a geri doner."""
+    try:
+        _agent_turn_inner(model, messages, shell, logger, cfg, max_iters)
+    except KeyboardInterrupt:
+        print("\n(iptal edildi — shell sifirlaniyor)")
+        logger.event("cancelled")
+        # Acik kalan tool_call'lari iptal sonucuyla kapat ki baglam tutarli kalsin
+        last_ai = next(
+            (i for i in range(len(messages) - 1, -1, -1)
+             if messages[i].get("role") == "assistant"), None)
+        if last_ai is not None:
+            calls = messages[last_ai].get("tool_calls") or []
+            answered = len(messages) - 1 - last_ai
+            for tc in calls[answered:]:
+                _tool_reply(messages, tc, "(kullanici iptal etti)")
+        shell.reset()
+
+
+def _agent_turn_inner(model, messages, shell, logger, cfg, max_iters=8):
+    """Bir kullanici turu: tool cagrilari bitene kadar model<->shell dongusu."""
+    empty_retries = 0
+    nudges = 0
+    used_tool = False
+    for _ in range(max_iters):
+        t_turn = time.time()
+        msg = {"role": "assistant", "content": "", "tool_calls": []}
+        filt = _ThinkFilter()
+        printed = False
+        spinner = _Spinner()
+        spinner.start()
+        try:
+            for chunk in chat_stream(model, messages, cfg):
+                delta = chunk.get("delta") or ""
+                if delta or chunk.get("tool_calls"):
+                    spinner.stop()
+                if delta:
+                    msg["content"] += delta
+                    out = filt.feed(delta)
+                    if out:
+                        if not printed:
+                            print()
+                            printed = True
+                        sys.stdout.write(out)
+                        sys.stdout.flush()
+                if chunk.get("tool_calls"):
+                    msg["tool_calls"] = chunk["tool_calls"]
+                if chunk.get("done"):
+                    break
+        finally:
+            spinner.stop()
+        tail = filt.flush()
+        if tail:
+            if not printed:
+                print()
+                printed = True
+            sys.stdout.write(tail)
+            sys.stdout.flush()
+        if printed:
+            print()
+        if not msg["tool_calls"]:
+            msg.pop("tool_calls")
+        messages.append(msg)
+        logger.event("assistant", content=msg["content"],
+                     tool_calls=msg.get("tool_calls"),
+                     duration_s=round(time.time() - t_turn, 2))
+
+        if not msg.get("tool_calls"):
+            if not msg["content"].strip() and empty_retries < 2:
+                # Bos yanit (model sadece EOS uretti): geri al ve tekrar dene
+                messages.pop()
+                empty_retries += 1
+                logger.event("empty_retry", attempt=empty_retries)
+                print("(bos yanit — tekrar deneniyor)")
+                continue
+            if not msg["content"].strip():
+                print("(model bos yanit dondurdu — soruyu farkli sekilde sor)")
+                return
+            if (not used_tool and nudges < 2
+                    and PLAN_IN_TEXT.search(msg["content"])):
+                # Plani metin olarak yazip tool cagirmadan durdu: geri durt
+                nudges += 1
+                logger.event("plan_nudge", attempt=nudges)
+                messages.append({
+                    "role": "user",
+                    "content": ("Plani mesaj olarak yazdin ama hic tool cagirmadin. "
+                                "Simdi uygun tool'u gercekten cagir."),
+                })
+                continue
+            return
+
+        used_tool = True
+        for tc in msg["tool_calls"]:
+            name = tc["function"]["name"]
+            try:
+                args = tc["function"]["arguments"]
+                if isinstance(args, str):
+                    args = json.loads(args)
+            except (json.JSONDecodeError, KeyError):
+                args = {}
+
+            if name == "run_shell":
+                command = str(args.get("command", "")).strip()
+                if not command:
+                    result = "(bos komut)"
+                elif DANGEROUS.search(command) and not confirm_dangerous(command):
+                    result = "(kullanici komutu reddetti)"
+                else:
+                    t0 = time.time()
+                    result = shell.run(command)
+                    logger.event("tool_result", tool=name, command=command,
+                                 result=result,
+                                 duration_s=round(time.time() - t0, 2))
+                _tool_reply(messages, tc, result)
+            elif name == "inbrisk":
+                command = str(args.get("command", "")).strip()
+                plan = args.get("plan")
+                if isinstance(plan, str):
+                    try:
+                        plan = json.loads(plan)
+                    except json.JSONDecodeError:
+                        plan = None
+                if isinstance(plan, dict) and "steps" not in plan:
+                    if "plan" in plan and isinstance(plan["plan"], dict):
+                        plan = plan["plan"]
+                    elif "action" in plan:
+                        plan = {"steps": [plan]}
+                if isinstance(plan, dict) and isinstance(plan.get("steps"), list):
+                    for s in plan["steps"]:
+                        if not isinstance(s, dict):
+                            continue
+                        # app'i target icine gomen modeller icin duzeltme
+                        if s.get("action") == "launch" and "app" not in s:
+                            t = s.get("target")
+                            if isinstance(t, dict) and "app" in t:
+                                s["app"] = t.pop("app")
+                                if not t:
+                                    s.pop("target")
+                            elif "name" in s:
+                                s["app"] = s.pop("name")
+                cli = ""
+                result = None
+                if isinstance(plan, dict):
+                    # JSON'u temp dosyaya yaz: shell quoting sorunlari tamamen bypass
+                    os.makedirs(LOGS_DIR, exist_ok=True)
+                    tmp = os.path.join(
+                        LOGS_DIR, f"plan_{int(time.time() * 1000)}.json")
+                    with open(tmp, "w", encoding="utf-8") as f:
+                        json.dump(plan, f, ensure_ascii=False)
+                    cli = f'inbrisk-cli run --file "{tmp}" --json'
+                elif command:
+                    first = command.split()[0]
+                    if "|" in command or ";" in command or first not in INBRISK_CMDS:
+                        result = (
+                            "[GECERSIZ] command alani yalniz su alt komutlari kabul eder: "
+                            + ", ".join(sorted(INBRISK_CMDS))
+                            + ". Pipe veya uydurma komut kullanma; "
+                            "UI aksiyonlari icin 'plan' alanini kullan."
+                        )
+                    else:
+                        cli = f"inbrisk-cli {command}"
+                if result is None:
+                    if not cli:
+                        result = "(command veya plan alani gerekli)"
+                    else:
+                        t0 = time.time()
+                        result = shell.run(cli)
+                        logger.event("tool_result", tool=name, command=cli,
+                                     result=result,
+                                     duration_s=round(time.time() - t0, 2))
+                _tool_reply(messages, tc, result)
+            else:
+                logger.event("tool_unknown", name=name, args=args)
+                _tool_reply(messages, tc, f"(bilinmeyen tool: {name})")
+
+    print("\n[maks. tool iterasyonuna ulasildi]")
+
+
+def autosave(messages, path):
+    """Oturum baglamini sessizce diske yazar — her tur cagirilir."""
+    try:
+        os.makedirs(SESSIONS_DIR, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(messages, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+
+def read_user_input():
+    """input() sonrasi buffer'da bekleyen satirlari tek mesajda toplar.
+
+    Terminale yapistirilan cok satirli metinler konsol girdi buffer'ina
+    art arda duser; ilk input() yalniz ilk satiri alir. Kisa bir pencerede
+    kbhit() ile kalan satirlari toplayip tek girdi olarak dondururuz.
+    """
+    line = input("\033[92m> \033[0m")
+    parts = [line]
+
+    def _kbhit():
+        try:
+            return msvcrt.kbhit()
+        except OSError:
+            return False
+
+    while True:
+        t0 = time.time()
+        pending = False
+        while time.time() - t0 < 0.15:
+            if _kbhit():
+                pending = True
+                break
+            time.sleep(0.01)
+        if not pending:
+            break
+        try:
+            parts.append(input())
+        except EOFError:
+            break
+    text = "\n".join(parts)
+    # bracketed-paste isaretleri sizarsa temizle
+    text = text.replace("\x1b[200~", "").replace("\x1b[201~", "")
+    return text.strip()
+
+
+HELP_TEXT = """\
+Komutlar:
+  /clear, /reset      konusma gecmisini sifirla
+  /save [ad]          oturumu isimli kaydet (otomatik kayit zaten yapilir)
+  /resume [ad]        kayitli oturumu yukle (ad yoksa en sonuncu)
+  /sessions           kayitli oturumlari listele
+  /model [ad]         aktif modeli goster veya degistir
+  /models             kurulu modelleri listele (backend'e gore)
+  /backend [ad]       backend'i goster veya degistir (ollama|openai|hermes)
+  /endpoint [url]     openai backend'i icin base-url goster/ayarla
+  /timeout <sn>       komut timeout'unu ayarla
+  /sh <komut>         AI'a sormadan dogrudan PowerShell komutu calistir
+  /log                aktif log dosyasinin yolunu goster
+  /help               bu listeyi goster
+  /exit, cikis        cik
+"""
+
+
+def handle_slash(cmdline, shell, messages, args, logger=None, auto_path=None):
+    """Slash komutunu isler. 'exit' donerse ana dongu kirilir."""
+    parts = cmdline.split(maxsplit=1)
+    cmd = parts[0].lower()
+    arg = parts[1].strip() if len(parts) > 1 else ""
+
+    if cmd in ("/clear", "/reset"):
+        messages[:] = messages[:1]
+        print("[konusma sifirlandi]")
+    elif cmd == "/save":
+        name = arg or time.strftime("%Y%m%d-%H%M%S")
+        os.makedirs(SESSIONS_DIR, exist_ok=True)
+        path = os.path.join(SESSIONS_DIR, name + ".json")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(messages, f, ensure_ascii=False, indent=2)
+        print(f"[kaydedildi: {path}]")
+    elif cmd in ("/resume", "/load"):
+        files = sorted(
+            (f for f in os.listdir(SESSIONS_DIR)
+             if f.endswith(".json")
+             and os.path.join(SESSIONS_DIR, f) != auto_path),
+            key=lambda f: os.path.getmtime(os.path.join(SESSIONS_DIR, f)),
+        ) if os.path.isdir(SESSIONS_DIR) else []
+        if not files:
+            print("[kayitli oturum yok]")
+        else:
+            target = arg + ".json" if arg else files[-1]
+            path = os.path.join(SESSIONS_DIR, target)
+            if not os.path.isfile(path):
+                print(f"[bulunamadi: {target}]")
+            else:
+                with open(path, encoding="utf-8") as f:
+                    loaded = json.load(f)
+                messages[:] = loaded
+                print(f"[yuklendi: {target} — {len(messages)} mesaj]")
+    elif cmd == "/sessions":
+        if os.path.isdir(SESSIONS_DIR):
+            for f in sorted(os.listdir(SESSIONS_DIR)):
+                if f.endswith(".json"):
+                    p = os.path.join(SESSIONS_DIR, f)
+                    print(f"  {f[:-5]}  ({os.path.getsize(p)} B, "
+                          f"{time.strftime('%d.%m %H:%M', time.localtime(os.path.getmtime(p)))})")
+        else:
+            print("[kayitli oturum yok]")
+    elif cmd == "/model":
+        if arg:
+            args.model = arg
+        print(f"[aktif model: {args.model}]")
+    elif cmd == "/models":
+        if args.backend == "openai":
+            try:
+                req = urllib.request.Request(
+                    args.base_url.rstrip("/") + "/models",
+                    headers={"Authorization": f"Bearer {args.api_key or 'local'}"})
+                data = json.loads(urllib.request.urlopen(req, timeout=10).read())
+                for m in data.get("data", []):
+                    print(f"  {m['id']}")
+            except Exception as e:
+                print(f"[endpoint hatasi] {e}")
+        else:
+            try:
+                tags = json.loads(urllib.request.urlopen(
+                    "http://localhost:11434/api/tags", timeout=10).read())
+                for m in tags.get("models", []):
+                    print(f"  {m['name']}  ({m['size'] / 1e9:.1f} GB)")
+            except Exception as e:
+                print(f"[ollama hatasi] {e}")
+    elif cmd == "/backend":
+        if arg == "hermes":
+            if resolve_hermes(args):
+                print(f"[backend: hermes -> {args.base_url}]")
+        elif arg in ("ollama", "openai"):
+            args.backend = arg
+            print(f"[backend: {args.backend}]")
+        elif arg:
+            print("[kullanim: /backend ollama|openai|hermes]")
+        else:
+            print(f"[aktif backend: {args.backend}]"
+                  + (f" -> {args.base_url}" if args.backend == "openai" else ""))
+    elif cmd == "/endpoint":
+        if arg:
+            args.base_url = arg
+        print(f"[base-url: {args.base_url}]")
+    elif cmd == "/timeout":
+        try:
+            shell.timeout = int(arg)
+            print(f"[timeout: {shell.timeout}s]")
+        except ValueError:
+            print("[kullanim: /timeout <saniye>]")
+    elif cmd == "/sh":
+        if arg:
+            shell.run(arg)
+        else:
+            print("[kullanim: /sh <komut>]")
+    elif cmd == "/log":
+        print(f"[log: {logger.path}]" if logger else "[loglama kapali]")
+    elif cmd in ("/help", "/?"):
+        print(HELP_TEXT)
+    elif cmd in ("/exit", "/quit"):
+        return "exit"
+    else:
+        print(f"[bilinmeyen komut: {cmd} — /help]")
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Ollama/OpenAI + kalici PowerShell agent")
+    ap.add_argument("--model", default="qwen3-coder-30b:iq3xxs")
+    ap.add_argument("--backend", choices=["ollama", "openai", "hermes"],
+                    default="ollama",
+                    help="ollama: yerel Ollama | openai: OpenAI-uyumlu endpoint "
+                         "| hermes: Hermes managed llama-server (server.json'dan otomatik)")
+    ap.add_argument("--base-url", default="http://127.0.0.1:9091/v1",
+                    help="openai backend'i icin API base url")
+    ap.add_argument("--api-key",
+                    default=os.environ.get("OPENAI_API_KEY", "local"))
+    ap.add_argument("--timeout", type=int, default=60, help="komut basina saniye")
+    ap.add_argument("--iterations", type=int, default=10)
+    args = ap.parse_args()
+
+    if args.backend == "hermes":
+        if not resolve_hermes(args):
+            sys.exit(1)
+
+    # openai backend'inde sunucudaki ilk modeli otomatik sec
+    if args.backend == "openai":
+        try:
+            req = urllib.request.Request(
+                args.base_url.rstrip("/") + "/models",
+                headers={"Authorization": f"Bearer {args.api_key or 'local'}"})
+            ids = [m["id"] for m in
+                   json.loads(urllib.request.urlopen(req, timeout=10).read())
+                   .get("data", [])]
+            if ids:
+                if args.model not in ids:
+                    print(f"[model: {ids[0]} (sunucuda yuklu)]")
+                    args.model = ids[0]
+            else:
+                print("[uyari] endpoint'te yuklu model yok — "
+                      "Hermes Local Models'dan bir model indir")
+        except Exception as e:
+            print(f"[uyari] endpoint'e ulasilamadi ({args.base_url}): {e}")
+
+    os.system("chcp 65001 >nul")
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+    # Backend kapaliysa baslatmayi dene (ollama otomatik kalkar)
+    if args.backend == "ollama":
+        ensure_ollama()
+
+    # Model yoksa ilk tool-call modeline dus (sadece ollama backend'inde)
+    installed = []
+    if args.backend == "ollama":
+        try:
+            tags = json.loads(urllib.request.urlopen(
+                "http://localhost:11434/api/tags", timeout=10).read())
+            installed = [m["name"] for m in tags.get("models", [])]
+        except Exception:
+            pass
+    if installed and not any(m.startswith(args.model.split(":")[0]) for m in installed):
+        fallback = next(
+            (m for m in installed if m.split(":")[0] in
+             ("qwen3", "qwen2.5", "llama3.1", "llama3.2", "mistral-nemo")),
+            installed[0],
+        )
+        print(f"[uyari] {args.model} yok, {fallback} kullaniliyor")
+        args.model = fallback
+
+    shell = PersistentShell(timeout=args.timeout)
+    logger = Logger(LOGS_DIR)
+    messages = [{"role": "system",
+                 "content": SYSTEM_PROMPT
+                 + f" Calisma dizini: {os.getcwd()}."}]
+    auto_path = os.path.join(
+        SESSIONS_DIR, time.strftime("auto_%Y%m%d-%H%M%S") + ".json")
+    logger.event("session_start", model=args.model, backend=args.backend,
+                 shell_pid=shell.proc.pid, cwd=os.getcwd())
+
+    backend_info = ("ollama" if args.backend == "ollama"
+                    else f"openai -> {args.base_url}")
+    print(f"AI Shell hazir — model: {args.model} | backend: {backend_info} | "
+          f"komutlar icin /help, cikis icin 'cikis'")
+    print(f"Shell: kalici PowerShell (PID {shell.proc.pid}) | log: {logger.path}")
+    print("[not] ilk yanit model yuklenirken biraz surebilir\n")
+
+    try:
+        while True:
+            autosave(messages, auto_path)  # her turda sessiz yedek
+            try:
+                user = read_user_input()
+            except EOFError:
+                break
+            if not user:
+                continue
+            if user.lower() in ("cikis", "exit", "quit"):
+                logger.event("user", text=user)
+                break
+            if user.startswith("/"):
+                logger.event("slash", command=user)
+                if handle_slash(user, shell, messages, args, logger, auto_path) == "exit":
+                    break
+                continue
+
+            logger.event("user", text=user)
+            messages.append({"role": "user", "content": user})
+            try:
+                agent_turn(model=args.model, messages=messages, shell=shell,
+                           logger=logger, cfg=args, max_iters=args.iterations)
+            except urllib.error.URLError as e:
+                print(f"[{args.backend} hatasi] {e}")
+                logger.event("error", source=args.backend, message=str(e))
+                messages.pop()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        logger.event("session_end")
+        logger.close()
+        shell.close()
+        print("\nShell kapatildi.")
+
+
+if __name__ == "__main__":
+    main()

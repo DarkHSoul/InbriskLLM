@@ -1,0 +1,18 @@
+# Oturum ve log ciktilari - uretim kaydi, versiyonlanmaz
+logs/
+sessions/
+
+# Python
+__pycache__/
+*.pyc
+
+# Windows artefaktlari
+nul
+Thumbs.db
+
+# Benchmark kalintilari (modelin yanlislikla yazdigi dosyalar)
+notepad.txt
+notepad.exe
+
+# Yedekler versiyon kontrolunde tutulur; ayri klasor
+# (ai_shell.py*.bak dosyalari bilerek commit EDILIR - mimari referans arsivi)

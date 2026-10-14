@@ -1,0 +1,11 @@
+{
+  "default_backend": "ollama",
+  "local_agent_model": "qwen3.5:2b",
+  "inbrisk_exe": "C:\\Users\\Ahmet\\AppData\\Local\\Programs\\Inbrisk\\inbrisk.exe",
+  "agent_keep_alive": 600,
+  "agent_temperature": 0.0,
+  "openai_url": "",
+  "openai_key": "",
+  "timeout": 60,
+  "iterations": 10
+}
