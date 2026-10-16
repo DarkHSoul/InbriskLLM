@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "title": "Inbrisk Automated Stress Test & Validation Report",
+  "start_time": "2026-10-15T01:03:19.274799+00:00",
+  "end_time": "2026-10-15T01:03:22.778965+00:00",
+  "total_duration_seconds": 3.504,
+  "iterations_requested": 1,
+  "overall_status": "FAILED",
+  "summary": {
+    "total_executed": 3,
+    "passed": 0,
+    "failed": 3,
+    "pass_rate_percent": 0.0
+  },
+  "inbrisk_server": {
+    "executable": "C:\\Users\\Ahmet\\AppData\\Local\\Programs\\Inbrisk\\inbrisk.exe",
+    "server_info": {
+      "name": "inbrisk",
+      "version": "0.5.0+6aa62d48ff7a2a59da57e0280fd06f30a09f74c1"
+    },
+    "protocol_version": "2024-11-05",
+    "published_tools_count": 25
+  },
+  "tests": [
+    {
+      "test_name": "Calculator 15+24=39",
+      "status": "FAILED",
+      "error": "GetClassName() takes no keyword arguments"
+    },
+    {
+      "test_name": "Notepad Text Verification",
+      "status": "FAILED",
+      "error": "GetClassName() takes no keyword arguments"
+    },
+    {
+      "test_name": "Paint State Verification",
+      "status": "FAILED",
+      "error": "GetClassName() takes no keyword arguments"
+    }
+  ]
+}

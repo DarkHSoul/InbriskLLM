@@ -9,30 +9,31 @@ import json
 import random
 
 TOOL_ARG_ALLOWED = {
-    "computer_windows": set(),
+    "computer_windows": {"ghost"},
     "computer_list_recipes": set(),
     "computer_capabilities": {"detail"},
-    "computer_observe": {"mode", "hwnd", "detail", "maxElements", "deltaOnly", "baseSnapshotId", "maxWidth", "marks", "prune", "ocr"},
-    "computer_find": {"role", "name", "automationId", "hwnd", "process", "enabled", "nameNotContains", "value", "valueContains", "className", "within", "limit", "detail", "query", "target", "queries", "prune", "ocr"},
-    "computer_launch": {"app", "search", "executable", "path", "aumid", "uri", "arguments", "newInstance", "waitFor", "timeoutMs", "debugPort", "then", "operationId", "adapter", "bridge"},
-    "computer_type": {"text", "elementId", "target", "mode", "position", "submit", "observe", "operationId", "silent"},
-    "computer_click": {"elementId", "target", "frameId", "observationId", "x", "y", "button", "observe", "operationId", "rx", "ry", "relativeTo", "silent"},
-    "computer_hotkey": {"key", "modifiers", "keys", "operationId", "silent"},
-    "computer_do": {"app", "click", "type", "hotkey", "submit", "target", "waitMs", "cleanup", "operationId", "adapter", "bridge", "saveAsRecipe", "save_as_recipe", "enableReflex", "enable_reflex", "autoDismissModals", "auto_dismiss_modals"},
-    "computer_batch": {"steps", "set", "until", "read", "detail", "failFast", "fail_fast", "saveAsRecipe", "save_as_recipe", "enableReflex", "enable_reflex", "autoDismissModals", "auto_dismiss_modals", "operationId"},
-    "computer_run": {"steps", "runId", "detail", "saveAsRecipe", "save_as_recipe", "enableReflex", "enable_reflex", "autoDismissModals", "auto_dismiss_modals", "operationId"},
-    "computer_run_recipe": {"name", "parameters", "runId", "detail", "operationId"},
+    "computer_observe": {"mode", "hwnd", "detail", "maxElements", "deltaOnly", "baseSnapshotId", "maxWidth", "marks", "prune", "ocr", "ghost"},
+    "computer_find": {"role", "name", "automationId", "hwnd", "process", "enabled", "nameNotContains", "value", "valueContains", "className", "within", "limit", "detail", "query", "target", "queries", "prune", "ocr", "ghost"},
+    "computer_launch": {"app", "search", "executable", "path", "aumid", "uri", "arguments", "newInstance", "waitFor", "timeoutMs", "debugPort", "then", "operationId", "adapter", "bridge", "ghost"},
+    "computer_type": {"text", "elementId", "target", "mode", "position", "submit", "observe", "operationId", "silent", "ghost"},
+    "computer_click": {"elementId", "target", "frameId", "observationId", "x", "y", "button", "observe", "operationId", "rx", "ry", "relativeTo", "silent", "ghost"},
+    "computer_hotkey": {"key", "modifiers", "keys", "operationId", "silent", "ghost"},
+    "computer_do": {"app", "click", "type", "hotkey", "submit", "target", "waitMs", "cleanup", "operationId", "adapter", "bridge", "saveAsRecipe", "save_as_recipe", "enableReflex", "enable_reflex", "autoDismissModals", "auto_dismiss_modals", "ghost"},
+    "computer_batch": {"steps", "set", "until", "read", "detail", "failFast", "fail_fast", "saveAsRecipe", "save_as_recipe", "enableReflex", "enable_reflex", "autoDismissModals", "auto_dismiss_modals", "operationId", "ghost"},
+    "computer_run": {"steps", "runId", "detail", "saveAsRecipe", "save_as_recipe", "enableReflex", "enable_reflex", "autoDismissModals", "auto_dismiss_modals", "operationId", "ghost"},
+    "computer_run_recipe": {"name", "parameters", "runId", "detail", "operationId", "ghost"},
     "computer_save_recipe": {"name", "fromRunId", "steps", "app", "description", "parameters", "preconditions", "postconditions"},
-    "computer_wait_for": {"query", "name", "text", "target", "hwnd", "process", "expectedState", "expectedValue", "value", "gone", "minCount", "stopOnDialog", "ms", "timeoutMs"},
+    "computer_wait_for": {"query", "name", "text", "target", "hwnd", "process", "expectedState", "expectedValue", "value", "gone", "minCount", "stopOnDialog", "ms", "timeoutMs", "ghost"},
     "computer_pause_run": {"runId", "reason"},
     "computer_resume_run": {"runId", "skipPausedStep", "reobserve", "remainingSteps", "bindings", "detail"},
-    "computer_read": {"targets", "props"},
-    "computer_reset_input": {"fixBlockingWindows", "force"},
-    "computer_screenshot": {"target", "hwnd", "x", "y", "w", "h", "elementId", "monitorIndex", "maxWidth", "max_width", "marks"},
-    "computer_close_window": {"hwnd", "hwnds", "process", "titleContains", "target", "owned", "lastOwned", "closeAllAgentWindows", "force", "operationId"},
+    "computer_read": {"targets", "props", "ghost"},
+    "computer_reset_input": {"fixBlockingWindows", "force", "ghost"},
+    "computer_screenshot": {"target", "hwnd", "x", "y", "w", "h", "elementId", "monitorIndex", "maxWidth", "max_width", "marks", "ghost"},
+    "computer_close_window": {"hwnd", "hwnds", "process", "titleContains", "target", "owned", "lastOwned", "closeAllAgentWindows", "force", "operationId", "ghost"},
     "computer_toolset": {"enable", "disable", "detail"},
-    "computer_inspect": {"hwnd", "elementId", "target", "maxElements", "detail", "relational", "hwnds"},
+    "computer_inspect": {"hwnd", "elementId", "target", "maxElements", "detail", "relational", "hwnds", "ghost"},
     "computer_ghost_control": {"action", "interactive", "fullScreen", "position", "opacity", "scale"},
+    "computer_ghost_stop": {"sessionId", "session_id", "stopPip", "stop_pip"},
     "ghost_control_open": {"action", "interactive", "fullScreen", "position", "opacity", "scale"},
     "get_system_info": {"topic"}
 }
@@ -61,6 +62,14 @@ SYSTEM_PROMPT = (
     "HEDEFLEME:\n"
     "- 'process' alanini tercih et: exe adinin ALT DIZGESI, ornegin 'notepad'.\n"
     "  Dil bagimsizdir (locale-safe); pencere basligi DEGILDIR.\n\n"
+    "GHOST (ARKA PLAN) MODU:\n"
+    "- Varsayilan olarak eylemler kullanici masaustunde (on planda) calisir.\n"
+    "- Kullanici 'arka planda', 'ghost', 'beni rahatsiz etmeden', 'arkada ac',\n"
+    "  'sessizce', 'arkada calistir' gibi isteklerde bulunursa, ilgili computer_*\n"
+    "  araclarina 'ghost': true parametresi eklenir.\n"
+    "- 'ghost': true ile calisan eylemler kullanicinin aktif imlecini ve ekranini mesgul\n"
+    "  etmeden ayri sanal masaustunde (Ghost Desktop) calisir.\n"
+    "- Kullanici arka plan belirtmedikce ghost parametresi verilmez (on plan).\n\n"
     "KURALLAR:\n"
     "- Eylem gerekiyorsa tool cagir; gerekmiyorsa dogrudan cevap ver.\n"
     "- Tool adini, argumanlari, pencere kimligini, element id'sini ASLA uydurma.\n"
@@ -149,28 +158,379 @@ def make_full_conversation(turns):
     return {"messages": msgs}
 
 
-def generate_all_samples():
+APPS = [
+    ("Not Defteri", "Notepad", "notepad.exe", 10100, "Adsız - Not Defteri"),
+    ("Hesap Makinesi", "Calculator", "CalculatorApp.exe", 10200, "Hesap Makinesi"),
+    ("Paint", "mspaint", "mspaint.exe", 10300, "Adsız - Paint"),
+    ("Dosya Gezgini", "explorer", "explorer.exe", 10400, "Bu Bilgisayar"),
+    ("Microsoft Edge", "msedge", "msedge.exe", 10500, "Yeni Sekme - Edge"),
+    ("Google Chrome", "chrome", "chrome.exe", 10600, "Yeni Sekme - Chrome"),
+    ("Spotify", "Spotify", "Spotify.exe", 10700, "Spotify"),
+    ("Visual Studio Code", "code", "Code.exe", 10800, "Visual Studio Code"),
+    ("WordPad", "wordpad", "wordpad.exe", 10900, "Belge - WordPad"),
+    ("Kayıt Defteri Düzenleyicisi", "regedit", "regedit.exe", 11000, "Kayıt Defteri Düzenleyicisi"),
+    ("Karakter Eşlem", "charmap", "charmap.exe", 11100, "Karakter Eşlem"),
+    ("Büyüteç", "magnify", "magnify.exe", 11200, "Büyüteç"),
+    ("Görev Yöneticisi", "taskmgr", "taskmgr.exe", 11300, "Görev Yöneticisi"),
+    ("Komut İstemi", "cmd", "cmd.exe", 11400, "Komut İstemi"),
+]
+
+def generate_ghost_contrastive_launch_samples(apps):
+    samples = []
+    contrast_templates = [
+        ("{name}'ni aç", "{name}'ni arka planda aç"),
+        ("{name}'ni normal önde başlat", "Beni rahatsız etmeden {name}'ni arkada çalıştır"),
+        ("Ön planda {name} penceresini aç", "{name} uygulamasını ghost modunda aç"),
+        ("Lütfen {name}'ni çalıştır", "Sessizce arkada {name}'ni açar mısın"),
+        ("{name} programını ekranda aç", "{name}'ni arkada çalıştır, faremi oynatma")
+    ]
+    for idx, (tr_name, app_id, exe, base_pid, win_title) in enumerate(apps[:10]):
+        tmpl_fg, tmpl_bg = contrast_templates[idx % len(contrast_templates)]
+        pid_fg = base_pid + 50 + idx
+        pid_bg = base_pid + 80 + idx
+
+        # 1. Foreground sample (default behavior)
+        prompt_fg = tmpl_fg.format(name=tr_name)
+        tc_fg = make_call("computer_launch", {"app": app_id})
+        res_fg = {
+            "status": "Verified",
+            "method": "NewProcess",
+            "pid": pid_fg,
+            "window": {"hwnd": f"0x{pid_fg:08x}", "title": win_title}
+        }
+        samples.append(multi_turn(
+            prompt_fg,
+            [(tc_fg, res_fg)],
+            f"{tr_name} ({app_id}) ön planda başarıyla başlatıldı ve pencere odağa alındı."
+        ))
+
+        # 2. Background Ghost sample (ghost: True)
+        prompt_bg = tmpl_bg.format(name=tr_name)
+        tc_bg = make_call("computer_launch", {"app": app_id, "ghost": True})
+        res_bg = {
+            "status": "Verified",
+            "method": "NewProcess",
+            "pid": pid_bg,
+            "ghost": True,
+            "window": {"hwnd": f"0x{pid_bg:08x}", "title": win_title}
+        }
+        samples.append(multi_turn(
+            prompt_bg,
+            [(tc_bg, res_bg)],
+            f"{tr_name} ({app_id}) Ghost masaüstünde arka planda başlatıldı; aktif pencereniz ve fare imleciniz etkilenmedi."
+        ))
+    return samples
+
+def generate_ghost_single_turn_samples():
     samples = []
 
-    # =========================================================================
-    # 1. APP LAUNCH & DISCOVERY - Çok çeşitli uygulamalar ve cümle kalıpları
-    # =========================================================================
-    apps = [
-        ("Not Defteri", "Notepad", "notepad.exe", 10100, "Adsız - Not Defteri"),
-        ("Hesap Makinesi", "Calculator", "CalculatorApp.exe", 10200, "Hesap Makinesi"),
-        ("Paint", "mspaint", "mspaint.exe", 10300, "Adsız - Paint"),
-        ("Dosya Gezgini", "explorer", "explorer.exe", 10400, "Bu Bilgisayar"),
-        ("Microsoft Edge", "msedge", "msedge.exe", 10500, "Yeni Sekme - Edge"),
-        ("Google Chrome", "chrome", "chrome.exe", 10600, "Yeni Sekme - Chrome"),
-        ("Spotify", "Spotify", "Spotify.exe", 10700, "Spotify"),
-        ("Visual Studio Code", "code", "Code.exe", 10800, "Visual Studio Code"),
-        ("WordPad", "wordpad", "wordpad.exe", 10900, "Belge - WordPad"),
-        ("Kayıt Defteri Düzenleyicisi", "regedit", "regedit.exe", 11000, "Kayıt Defteri Düzenleyicisi"),
-        ("Karakter Eşlem", "charmap", "charmap.exe", 11100, "Karakter Eşlem"),
-        ("Büyüteç", "magnify", "magnify.exe", 11200, "Büyüteç"),
-        ("Görev Yöneticisi", "taskmgr", "taskmgr.exe", 11300, "Görev Yöneticisi"),
-        ("Komut İstemi", "cmd", "cmd.exe", 11400, "Komut İstemi"),
+    # 1. computer_do in Ghost
+    ghost_do_data = [
+        ("Arka planda Not Defteri'ne Merhaba Dünya yaz", "Notepad", "Merhaba Dünya", True),
+        ("Beni rahatsız etmeden Not Defteri'ne haftalık planı yaz", "Notepad", "haftalık plan", True),
+        ("Arkada çalışan Not Defteri'ne 'Toplantı Notu: Saat 15:00' yaz", "Notepad", "Toplantı Notu: Saat 15:00", True),
+        ("Ghost modunda Not Defteri'ne Türkçe karakter testi: çğışöü yaz", "Notepad", "çğışöü", True),
+        ("Arka plandaki Not Defteri içine 'Inbrisk LLM Otomasyonu' yaz", "Notepad", "Inbrisk LLM Otomasyonu", True),
+        ("Sessizce arkadaki Not Defteri'ne sistem durum raporunu ekle", "Notepad", "Sistem durum raporu", True),
     ]
+    for prompt, app, text, submit in ghost_do_data:
+        tc = make_call("computer_do", {"app": app, "type": text, "submit": submit, "ghost": True})
+        res = {"status": "Verified", "app": app, "action": "type", "text": text, "ghost": True, "verification": "ValueReadback"}
+        samples.append(multi_turn(
+            prompt,
+            [(tc, res)],
+            f"Ghost masaüstündeki {app} içerisine '{text}' metni arka planda yazıldı."
+        ))
+
+    # 2. computer_batch in Ghost
+    ghost_batches = [
+        (
+            "Arka planda hesap makinesinde 25 artı 75 işlemini yap",
+            [
+                {"do": "click", "t": "2"},
+                {"do": "click", "t": "5"},
+                {"do": "click", "t": "Artı"},
+                {"do": "click", "t": "7"},
+                {"do": "click", "t": "5"},
+                {"do": "click", "t": "Eşittir"}
+            ],
+            "Ghost masaüstünde hesap makinesinde 25 + 75 = 100 işlemi arka planda tamamlandı."
+        ),
+        (
+            "Beni rahatsız etmeden arkada tüm metni seçip panoya kopyala",
+            [
+                {"do": "hotkey", "keys": "ctrl+a"},
+                {"do": "hotkey", "keys": "ctrl+c"}
+            ],
+            "Arka planda Ctrl+A ile metin seçildi ve Ctrl+C ile panoya kopyalandı."
+        ),
+        (
+            "Ghost masaüstünde yeni satıra geçip panodakini yapıştır",
+            [
+                {"do": "hotkey", "keys": "enter"},
+                {"do": "hotkey", "keys": "ctrl+v"}
+            ],
+            "Ghost masaüstünde Enter ile yeni satıra geçildi ve panodaki içerik yapıştırıldı."
+        ),
+        (
+            "Arkada hesap makinesinde 100 eksi 30 işlemini gerçekleştir",
+            [
+                {"do": "click", "t": "1"},
+                {"do": "click", "t": "0"},
+                {"do": "click", "t": "0"},
+                {"do": "click", "t": "Eksi"},
+                {"do": "click", "t": "3"},
+                {"do": "click", "t": "0"},
+                {"do": "click", "t": "Eşittir"}
+            ],
+            "Arka planda 100 - 30 = 70 hesaplaması yapıldı."
+        ),
+    ]
+    for prompt, steps, reply in ghost_batches:
+        tc = make_call("computer_batch", {"steps": steps, "ghost": True})
+        res = {"status": "Verified", "completedSteps": len(steps), "ghost": True, "stepResults": [{"step": i+1, "status": "Verified"} for i in range(len(steps))]}
+        samples.append(multi_turn(prompt, [(tc, res)], reply))
+
+    # 3. computer_windows in Ghost
+    ghost_win_prompts = [
+        "Arka plandaki açık pencereleri listele",
+        "Ghost masaüstünde hangi pencereler açık?",
+        "Beni rahatsız etmeden arkada çalışan uygulamaları kontrol et",
+        "Sessizce arkadaki pencereleri tara",
+    ]
+    for prompt in ghost_win_prompts:
+        tc = make_call("computer_windows", {"ghost": True})
+        res = {
+            "ghost": True,
+            "windows": [
+                {"hwnd": "0x0021001", "pid": 15100, "title": "Adsız - Not Defteri", "process": "notepad"},
+                {"hwnd": "0x0021002", "pid": 15200, "title": "Hesap Makinesi", "process": "calculatorapp"}
+            ]
+        }
+        samples.append(multi_turn(
+            prompt,
+            [(tc, res)],
+            "Ghost masaüstünde çalışan pencereler listelendi: Not Defteri (0x0021001) ve Hesap Makinesi (0x0021002)."
+        ))
+
+    # 4. computer_close_window in Ghost
+    ghost_close_scenarios = [
+        ("Arka plandaki Not Defteri penceresini kapat", {"process": "notepad", "ghost": True}, "Arka plandaki Not Defteri penceresi kapatıldı."),
+        ("Ghost masaüstündeki Hesap Makinesi'ni kapat", {"process": "calculatorapp", "ghost": True}, "Ghost masaüstündeki Hesap Makinesi sonlandırıldı."),
+        ("Arkada açık olan Paint penceresini kapat", {"process": "mspaint", "ghost": True}, "Arka plandaki Paint penceresi kapatıldı."),
+        ("Beni rahatsız etmeden arkadaki pencereyi sonlandır", {"hwnd": "0x0021001", "ghost": True}, "Ghost masaüstündeki 0x0021001 numaralı pencere kapatıldı."),
+    ]
+    for prompt, args, reply in ghost_close_scenarios:
+        tc = make_call("computer_close_window", args)
+        res = {"status": "Verified", "closed": True, "ghost": True}
+        samples.append(multi_turn(prompt, [(tc, res)], reply))
+
+    # 5. computer_screenshot in Ghost
+    ghost_shot_prompts = [
+        "Arka planın ekran görüntüsünü al",
+        "Ghost masaüstünün ekranını yakala",
+        "Beni rahatsız etmeden arkadaki ekranı fotoğrafla",
+    ]
+    for prompt in ghost_shot_prompts:
+        tc = make_call("computer_screenshot", {"ghost": True})
+        res = {"status": "Verified", "width": 1920, "height": 1080, "ghost": True, "format": "png"}
+        samples.append(multi_turn(prompt, [(tc, res)], "Ghost masaüstünün ekran görüntüsü başarıyla alındı."))
+
+    # 6. computer_observe in Ghost
+    ghost_obs_prompts = [
+        ("Arka plandaki ekranı gözlemle", "slim"),
+        ("Ghost masaüstünde ne açık incele", "slim"),
+        ("Beni rahatsız etmeden arkadaki masaüstünü tara", "slim"),
+    ]
+    for prompt, detail in ghost_obs_prompts:
+        tc = make_call("computer_observe", {"detail": detail, "ghost": True})
+        res = {
+            "ghost": True,
+            "window": {"title": "Adsız - Not Defteri", "hwnd": "0x0021001"},
+            "elements": [
+                {"elementId": "uia_ghost_1", "role": "Document", "name": "Metin Düzenleyici"},
+                {"elementId": "uia_ghost_2", "role": "MenuItem", "name": "Dosya"}
+            ],
+            "truncated": False
+        }
+        samples.append(multi_turn(
+            prompt,
+            [(tc, res)],
+            "Ghost masaüstü gözlemlendi: 'Adsız - Not Defteri' penceresi ve 'Metin Düzenleyici' alanı aktif."
+        ))
+
+    # 7. computer_hotkey in Ghost
+    ghost_hotkeys = [
+        ("Arka planda Ctrl+S ile kaydet", "s", "ctrl"),
+        ("Ghost masaüstünde Enter tuşuna bas", "enter", ""),
+        ("Beni rahatsız etmeden arkada Ctrl+A tuş kombinasyonunu bas", "a", "ctrl"),
+        ("Arkada F5 ile yenile", "f5", ""),
+    ]
+    for prompt, k, m in ghost_hotkeys:
+        args = {"key": k, "ghost": True}
+        if m:
+            args["modifiers"] = m
+        tc = make_call("computer_hotkey", args)
+        res = {"status": "Verified", "key": k, "modifiers": m, "ghost": True}
+        samples.append(multi_turn(prompt, [(tc, res)], f"Ghost masaüstüne tuş kombinasyonu ({m+'+'+k if m else k}) iletildi."))
+
+    # 8. computer_click & computer_type & computer_find & computer_inspect & computer_wait_for & computer_reset_input
+    tc_clk = make_call("computer_click", {"target": "Kaydet", "ghost": True})
+    samples.append(multi_turn(
+        "Arka plandaki 'Kaydet' butonuna tıkla",
+        [(tc_clk, {"status": "Verified", "clicked": True, "ghost": True})],
+        "Ghost masaüstündeki 'Kaydet' butonuna fare imleciniz oynatılmadan tıklandı."
+    ))
+
+    tc_typ = make_call("computer_type", {"text": "test verisi", "ghost": True})
+    samples.append(multi_turn(
+        "Arka plandaki giriş kutusuna 'test verisi' yaz",
+        [(tc_typ, {"status": "Verified", "text": "test verisi", "ghost": True})],
+        "Ghost masaüstündeki aktif alana 'test verisi' yazıldı."
+    ))
+
+    tc_fnd = make_call("computer_find", {"name": "Giriş", "ghost": True})
+    samples.append(multi_turn(
+        "Ghost masaüstünde 'Giriş' butonunu bul",
+        [(tc_fnd, {"status": "Verified", "elements": [{"name": "Giriş", "elementId": "uia_btn_login"}], "ghost": True})],
+        "Ghost masaüstünde 'Giriş' butonu bulundu (ID: uia_btn_login)."
+    ))
+
+    tc_insp = make_call("computer_inspect", {"hwnd": "0x0021001", "detail": "full", "ghost": True})
+    samples.append(multi_turn(
+        "Arka plandaki Not Defteri penceresinin detaylarını incele",
+        [(tc_insp, {"status": "Verified", "hwnd": "0x0021001", "ghost": True, "tree": {"role": "Window", "children": []}})],
+        "Ghost masaüstündeki Not Defteri pencere hiyerarşisi başarıyla incelendi."
+    ))
+
+    tc_wait = make_call("computer_wait_for", {"process": "notepad", "expectedState": "visible", "ghost": True})
+    samples.append(multi_turn(
+        "Arka planda Not Defteri penceresi görünene kadar bekle",
+        [(tc_wait, {"status": "Verified", "matched": True, "elapsedMs": 300, "ghost": True})],
+        "Arka plandaki Not Defteri penceresi 300 ms içinde hazır duruma geldi."
+    ))
+
+    tc_rst = make_call("computer_reset_input", {"force": True, "ghost": True})
+    samples.append(multi_turn(
+        "Ghost masaüstü girişlerini sıfırla, takılı tuşları temizle",
+        [(tc_rst, {"status": "Verified", "resetKeys": True, "ghost": True})],
+        "Ghost masaüstü giriş kanalı ve tuş durumları sıfırlandı."
+    ))
+
+    tc_stop1 = make_call("computer_ghost_stop", {"stopPip": True})
+    samples.append(multi_turn(
+        "Ghost masaüstünü tamamen sonlandır",
+        [(tc_stop1, {"success": True, "pipStopped": True, "message": "Ghost desktop session, local isolated desktop processes, and PiP stream successfully stopped."})],
+        "Ghost masaüstü oturumu, arka plan süreçleri ve PiP penceresi tamamen sonlandırıldı."
+    ))
+
+    tc_stop2 = make_call("computer_ghost_stop", {})
+    samples.append(multi_turn(
+        "Arka plandaki ghost oturumunu kapat",
+        [(tc_stop2, {"success": True, "message": "Ghost desktop session stopped."})],
+        "Ghost masaüstü oturumu başarıyla kapatıldı."
+    ))
+
+    tc_ctrl_stop = make_call("computer_ghost_control", {"action": "stop"})
+    samples.append(multi_turn(
+        "Ghost kontrol servisini ve PiP penceresini durdur",
+        [(tc_ctrl_stop, {"success": True, "action": "stop", "state": "stopped", "message": "Ghost Control daemon stopped."})],
+        "Ghost kontrol servisi ve PiP penceresi durduruldu."
+    ))
+
+    return samples
+
+def generate_ghost_multi_turn_samples():
+    samples = []
+
+    # Senaryo G1: Tam Ghost İş Akışı (Aç -> Yaz -> Kaydet -> Kapat)
+    tc_g1_1 = make_call("computer_launch", {"app": "Notepad", "ghost": True})
+    res_g1_1 = {"status": "Verified", "pid": 16010, "ghost": True, "window": {"hwnd": "0x0016010", "title": "Adsız - Not Defteri"}}
+    tc_g1_2 = make_call("computer_do", {"app": "Notepad", "type": "Arka Plan Görev Raporu: Tamamlandı", "submit": True, "ghost": True})
+    res_g1_2 = {"status": "Verified", "action": "type", "ghost": True}
+    tc_g1_3 = make_call("computer_hotkey", {"key": "s", "modifiers": "ctrl", "ghost": True})
+    res_g1_3 = {"status": "Verified", "pressed": "ctrl+s", "ghost": True}
+    tc_g1_4 = make_call("computer_close_window", {"process": "notepad", "ghost": True})
+    res_g1_4 = {"status": "Verified", "closed": True, "ghost": True}
+
+    samples.append(make_full_conversation([
+        {"user": "Beni rahatsız etmeden arka planda Not Defteri'ni aç", "steps": [(tc_g1_1, res_g1_1)], "assistant": "Not Defteri arka planda (Ghost Masaüstü) başlatıldı. Aktif masaüstünüz etkilenmedi."},
+        {"user": "İçine 'Arka Plan Görev Raporu: Tamamlandı' yaz", "steps": [(tc_g1_2, res_g1_2)], "assistant": "Metin arka plandaki Not Defteri penceresine yazıldı."},
+        {"user": "Ctrl+S ile kaydet", "steps": [(tc_g1_3, res_g1_3)], "assistant": "Arka planda Ctrl+S kaydetme kısayolu basıldı."},
+        {"user": "Şimdi arka plandaki Not Defteri'ni kapat", "steps": [(tc_g1_4, res_g1_4)], "assistant": "Arka plandaki Not Defteri penceresi güvenle kapatıldı."}
+    ]))
+
+    # Senaryo G2: Ön Plan ve Arka Plan Karşılaştırmalı Çok Adımlı Oturum (Contrastive Multi-Turn)
+    tc_g2_1 = make_call("computer_launch", {"app": "Calculator"})
+    res_g2_1 = {"status": "Verified", "pid": 17010, "window": {"hwnd": "0x0017010", "title": "Hesap Makinesi"}}
+    tc_g2_2 = make_call("computer_launch", {"app": "Notepad", "ghost": True})
+    res_g2_2 = {"status": "Verified", "pid": 17020, "ghost": True, "window": {"hwnd": "0x0017020", "title": "Adsız - Not Defteri"}}
+    tc_g2_3 = make_call("computer_do", {"app": "Notepad", "type": "Ön plan ve arka plan testi", "submit": True, "ghost": True})
+    res_g2_3 = {"status": "Verified", "action": "type", "ghost": True}
+    tc_g2_4 = make_call("computer_close_window", {"process": "notepad", "ghost": True})
+    res_g2_4 = {"status": "Verified", "closed": True, "ghost": True}
+
+    samples.append(make_full_conversation([
+        {"user": "Hesap makinesini ön planda aç", "steps": [(tc_g2_1, res_g2_1)], "assistant": "Hesap Makinesi ön planda açıldı."},
+        {"user": "Şimdi de beni rahatsız etmeden Not Defteri'ni arkada çalıştır", "steps": [(tc_g2_2, res_g2_2)], "assistant": "Not Defteri arka planda (Ghost) çalıştırıldı."},
+        {"user": "Arka plandaki Not Defteri'ne 'Ön plan ve arka plan testi' yaz", "steps": [(tc_g2_3, res_g2_3)], "assistant": "Metin arka plandaki Not Defteri'ne başarıyla yazıldı."},
+        {"user": "Arkadaki Not Defteri penceresini kapat, Hesap Makinesi açık kalsın", "steps": [(tc_g2_4, res_g2_4)], "assistant": "Arka plandaki Not Defteri kapatıldı, ön plandaki Hesap Makinesi açık kalmaya devam ediyor."}
+    ]))
+
+    # Senaryo G3: Ghost Batch Oturumu (Arkada Hesaplama)
+    tc_g3_1 = make_call("computer_launch", {"app": "Calculator", "ghost": True})
+    res_g3_1 = {"status": "Verified", "pid": 18010, "ghost": True, "window": {"hwnd": "0x0018010", "title": "Hesap Makinesi"}}
+    tc_g3_2 = make_call("computer_batch", {
+        "steps": [
+            {"do": "click", "t": "4"},
+            {"do": "click", "t": "5"},
+            {"do": "click", "t": "Artı"},
+            {"do": "click", "t": "5"},
+            {"do": "click", "t": "5"},
+            {"do": "click", "t": "Eşittir"}
+        ],
+        "ghost": True
+    })
+    res_g3_2 = {"status": "Verified", "completedSteps": 6, "ghost": True}
+    tc_g3_3 = make_call("computer_close_window", {"process": "calculatorapp", "ghost": True})
+    res_g3_3 = {"status": "Verified", "closed": True, "ghost": True}
+
+    samples.append(make_full_conversation([
+        {"user": "Arka planda hesap makinesini aç", "steps": [(tc_g3_1, res_g3_1)], "assistant": "Hesap Makinesi Ghost masaüstünde arka planda açıldı."},
+        {"user": "Beni rahatsız etmeden 45 artı 55 işlemini yap", "steps": [(tc_g3_2, res_g3_2)], "assistant": "Ghost masaüstünde 45 + 55 = 100 işlemi tamamlandı."},
+        {"user": "Arka plandaki hesap makinesini kapat", "steps": [(tc_g3_3, res_g3_3)], "assistant": "Arka plandaki Hesap Makinesi kapatıldı."}
+    ]))
+
+    # Senaryo G4: Ghost Pencere Listeleme -> Gözlem -> Tıklama
+    tc_g4_1 = make_call("computer_windows", {"ghost": True})
+    res_g4_1 = {"windows": [{"hwnd": "0x0019010", "title": "Adsız - Not Defteri", "process": "notepad"}], "ghost": True}
+    tc_g4_2 = make_call("computer_observe", {"detail": "slim", "ghost": True})
+    res_g4_2 = {"window": {"title": "Adsız - Not Defteri", "hwnd": "0x0019010"}, "elements": [{"elementId": "uia_g1", "role": "MenuItem", "name": "Dosya"}], "ghost": True}
+    tc_g4_3 = make_call("computer_click", {"elementId": "uia_g1", "ghost": True})
+    res_g4_3 = {"status": "Verified", "clicked": True, "ghost": True}
+
+    samples.append(make_full_conversation([
+        {"user": "Ghost masaüstünde açık pencereleri kontrol et", "steps": [(tc_g4_1, res_g4_1)], "assistant": "Ghost masaüstünde Not Defteri penceresi (0x0019010) açık durumda."},
+        {"user": "Arkadaki ekranı gözlemle", "steps": [(tc_g4_2, res_g4_2)], "assistant": "Ghost masaüstündeki Not Defteri penceresinde 'Dosya' menü öğesi gözlemlendi."},
+        {"user": "Oradaki 'Dosya' menüsüne arka planda tıkla", "steps": [(tc_g4_3, res_g4_3)], "assistant": "Arka plandaki Not Defteri penceresinde 'Dosya' menüsüne tıklandı."}
+    ]))
+
+    # Senaryo G5: Ghost Eleman Bulma ve Yazma
+    tc_g5_1 = make_call("computer_find", {"role": "Document", "ghost": True})
+    res_g5_1 = {"elements": [{"elementId": "uia_doc1", "role": "Document", "name": "Metin Düzenleyici"}], "ghost": True}
+    tc_g5_2 = make_call("computer_type", {"elementId": "uia_doc1", "text": "Otomasyon Başarılı", "ghost": True})
+    res_g5_2 = {"status": "Verified", "text": "Otomasyon Başarılı", "ghost": True}
+
+    samples.append(make_full_conversation([
+        {"user": "Ghost masaüstünde metin kutusunu bul", "steps": [(tc_g5_1, res_g5_1)], "assistant": "Ghost masaüstünde 'Metin Düzenleyici' alanı bulundu (ID: uia_doc1)."},
+        {"user": "Beni rahatsız etmeden oraya 'Otomasyon Başarılı' yaz", "steps": [(tc_g5_2, res_g5_2)], "assistant": "Ghost masaüstündeki metin alanına 'Otomasyon Başarılı' yazıldı."}
+    ]))
+
+    return samples
+
+def generate_all_samples():
+    samples = []
+    apps = APPS
 
     prompt_templates = [
         "{name}'ni aç",
@@ -503,14 +863,22 @@ def generate_all_samples():
         ("Merhaba", "Merhaba! Ben Inbrisk masaüstü otomasyon asistanıyım. Size nasıl yardımcı olabilirim?"),
         ("Selam", "Selamlar! Bugün hangi masaüstü görevini otomatikleştirmek istersiniz?"),
         ("Sen kimsin?", "Ben Inbrisk: Windows üzerinde pencereleri yöneten, uygulamaları başlatan ve masaüstü görevlerini güvenli şekilde otomatikleştiren yerel bir yapay zeka asistanıyım."),
-        ("Inbrisk ile neler yapabilirsin?", "Inbrisk ile şu işlemleri yapabilirim:\n- Windows uygulamalarını (Notepad, Calculator, Tarayıcı vb.) başlatma\n- Açık pencereleri listeleme ve güvenli kapatma\n- Metin yazma, buton tıklama ve klavye kısayollarını yürütme\n- Ekranı ve UI öğelerini inceleme\n- Çok adımlı otomasyon batch'lerini tek seferde çalıştırma"),
+        ("Inbrisk ile neler yapabilirsin?", "Inbrisk ile şu işlemleri yapabilirim:\n- Windows uygulamalarını (Notepad, Calculator, Tarayıcı vb.) başlatma\n- Açık pencereleri listeleme ve güvenli kapatma\n- Metin yazma, buton tıklama ve klavye kısayollarını yürütme\n- Ekranı ve UI öğelerini inceleme\n- Çok adımlı otomasyon batch'lerini tek seferde çalıştırma\n- Ghost modu ile kullanıcıyı rahatsız etmeden arka planda çalışma"),
         ("Görevin nedir?", "Masaüstünüzdeki tekrarlayan görevleri insan hatasından uzak, güvenli ve hızlı bir şekilde yürütmektir."),
         ("Yardımın için sağ ol", "Rica ederim, her zaman buradayım! Kolay gelsin."),
         ("Windows 10 mu 11 mi kullanmalıyım?", "Inbrisk hem Windows 10 hem de Windows 11 üzerinde UI Automation altyapısıyla tam uyumlu çalışır; tercihinize göre her ikisinde de kullanabilirsiniz."),
         ("Sistem dosyalarını silebilir misin?", "Hayır. Güvenlik politikam gereği sistem dosyalarını silme, format atma veya zarar verebilecek yıkıcı işlemleri gerçekleştiremem."),
+        ("Ghost modu nedir ve ne zaman kullanılır?", "Ghost modu (arka plan otomasyonu), Inbrisk'in eylemleri ayrı bir sanal masaüstünde (Ghost Desktop) yürütmesini sağlar. Kullanıcı 'arka planda', 'ghost', 'beni rahatsız etmeden' veya 'sessizce' istediğinde devreye girer. Bu modda fare imleciniz hareket etmez, aktif pencereleriniz odağını kaybetmez ve siz bilgisayarınızda çalışmaya devam ederken işlemler arka planda tamamlanır."),
     ]
     for u, a in direct_dialogs:
         samples.append(direct_turn(u, a))
+
+    # =========================================================================
+    # 9. GHOST DESKTOP SAMPLES (CONTRASTIVE, SINGLE-TURN, MULTI-TURN)
+    # =========================================================================
+    samples.extend(generate_ghost_contrastive_launch_samples(apps))
+    samples.extend(generate_ghost_single_turn_samples())
+    samples.extend(generate_ghost_multi_turn_samples())
 
     return samples
 

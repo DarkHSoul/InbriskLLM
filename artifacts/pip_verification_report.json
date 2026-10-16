@@ -1,0 +1,355 @@
+{
+  "timestamp": "2026-10-15T01:04:10.869445+00:00",
+  "target_hwnd": 94899330,
+  "discovery": {
+    "candidates_found": 1
+  },
+  "inspection": {
+    "hwnd": "0x05A80C82",
+    "title": "Inbrisk Ghost PiP Test",
+    "class_name": "InbriskGhostPipWindowClass",
+    "pid": 24080,
+    "process_name": "test_pip.exe",
+    "exe_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\bin\\Debug\\net8.0-windows10.0.19041.0\\test_pip.exe",
+    "thread_id": 13428,
+    "desktop_name": "exebox-WUO4NQ34GF5I7TE3OQEJLRUNUE",
+    "is_visible": true,
+    "is_iconic": false,
+    "rect": {
+      "left": 1424,
+      "top": 16,
+      "right": 1904,
+      "bottom": 286,
+      "width": 480,
+      "height": 270
+    },
+    "client_rect": {
+      "left": 0,
+      "top": 0,
+      "right": 480,
+      "bottom": 270,
+      "width": 480,
+      "height": 270
+    },
+    "extended_frame_rect": {
+      "left": 1424,
+      "top": 16,
+      "right": 1904,
+      "bottom": 286,
+      "width": 480,
+      "height": 270
+    },
+    "styles": {
+      "raw_style": "0x940E0000",
+      "raw_ex_style": "0x080C0108",
+      "ws_visible": true,
+      "ws_popup": true,
+      "ws_thickframe": true,
+      "ws_ex_topmost": true,
+      "ws_ex_noactivate": true,
+      "ws_ex_transparent": false,
+      "ws_ex_layered": true,
+      "ws_ex_appwindow": true
+    },
+    "opacity": 255,
+    "display_affinity": 0,
+    "cloaked_flags": 0,
+    "monitor": {
+      "name": "\\\\.\\DISPLAY1",
+      "dpi": 96,
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "right": 1920,
+        "bottom": 1080,
+        "width": 1920,
+        "height": 1080
+      },
+      "work_rect": {
+        "left": 0,
+        "top": 0,
+        "right": 1920,
+        "bottom": 1032,
+        "width": 1920,
+        "height": 1032
+      },
+      "anchor_preset": "TopRight",
+      "margins": {
+        "left": 1424,
+        "top": 16,
+        "right": 16,
+        "bottom": 746
+      }
+    },
+    "z_order_topmost": true
+  },
+  "visual_tree": {
+    "win32_tree": {
+      "desktop_hwnd": "0x01190EE4",
+      "parent_hwnd": "0x00000000",
+      "owner_hwnd": "0x00000000",
+      "root_hwnd": "0x05A80C82",
+      "parent_ancestor_hwnd": "0x01190EE4",
+      "valid": true
+    },
+    "uia_tree": {
+      "present": true,
+      "details": {
+        "name": "Inbrisk Ghost PiP Test",
+        "class_name": "InbriskGhostPipWindowClass",
+        "control_type": 50032,
+        "is_offscreen": false,
+        "hr": 0
+      }
+    },
+    "iaccessible_tree": {
+      "present": true,
+      "details": {
+        "hr": 0,
+        "pAcc": "0x1659F12A110"
+      }
+    },
+    "passed": true
+  },
+  "dwm_redirection": {
+    "composition_enabled": true,
+    "extended_frame_bounds": {
+      "left": 1424,
+      "top": 16,
+      "right": 1904,
+      "bottom": 286,
+      "width": 480,
+      "height": 270
+    },
+    "cloaked": {
+      "raw": 0,
+      "is_cloaked": false,
+      "by_app": false,
+      "by_shell": false,
+      "by_inherited": false
+    },
+    "redirection_list_registered": true,
+    "redirection_source_size": {
+      "width": 480,
+      "height": 270
+    },
+    "nc_rendering_enabled": true,
+    "passed": true
+  },
+  "captures": {
+    "dwm_redirection_capture": {
+      "path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\artifacts\\pip_captures\\pip_dwm_redirect_0x05A80C82.png",
+      "analysis": {
+        "width": 480,
+        "height": 270,
+        "mean_brightness": 25.0,
+        "rgb_mean": [
+          24.0,
+          24.0,
+          27.0
+        ],
+        "std_dev": 0.0,
+        "unique_sample_colors": 1,
+        "is_all_black": false,
+        "is_solid_color": true,
+        "is_blank": false
+      }
+    },
+    "crop_header": {
+      "path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\artifacts\\pip_captures\\crop_header_0x05A80C82.png",
+      "bounds": [
+        0,
+        0,
+        480,
+        26
+      ],
+      "analysis": {
+        "width": 480,
+        "height": 26,
+        "mean_brightness": 25.0,
+        "rgb_mean": [
+          24.0,
+          24.0,
+          27.0
+        ],
+        "std_dev": 0.0,
+        "unique_sample_colors": 1,
+        "is_all_black": false,
+        "is_solid_color": true,
+        "is_blank": false
+      }
+    },
+    "crop_client": {
+      "path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\artifacts\\pip_captures\\crop_client_content_0x05A80C82.png",
+      "bounds": [
+        0,
+        26,
+        480,
+        270
+      ],
+      "analysis": {
+        "width": 480,
+        "height": 244,
+        "mean_brightness": 25.0,
+        "rgb_mean": [
+          24.0,
+          24.0,
+          27.0
+        ],
+        "std_dev": 0.0,
+        "unique_sample_colors": 1,
+        "is_all_black": false,
+        "is_solid_color": true,
+        "is_blank": false
+      }
+    },
+    "crop_corners": {
+      "top_left": {
+        "path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\artifacts\\pip_captures\\crop_corner_top_left_0x05A80C82.png",
+        "bounds": [
+          0,
+          0,
+          48,
+          48
+        ],
+        "analysis": {
+          "width": 48,
+          "height": 48,
+          "mean_brightness": 25.0,
+          "rgb_mean": [
+            24.0,
+            24.0,
+            27.0
+          ],
+          "std_dev": 0.0,
+          "unique_sample_colors": 1,
+          "is_all_black": false,
+          "is_solid_color": true,
+          "is_blank": false
+        }
+      },
+      "top_right": {
+        "path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\artifacts\\pip_captures\\crop_corner_top_right_0x05A80C82.png",
+        "bounds": [
+          432,
+          0,
+          480,
+          48
+        ],
+        "analysis": {
+          "width": 48,
+          "height": 48,
+          "mean_brightness": 25.0,
+          "rgb_mean": [
+            24.0,
+            24.0,
+            27.0
+          ],
+          "std_dev": 0.0,
+          "unique_sample_colors": 1,
+          "is_all_black": false,
+          "is_solid_color": true,
+          "is_blank": false
+        }
+      },
+      "bottom_left": {
+        "path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\artifacts\\pip_captures\\crop_corner_bottom_left_0x05A80C82.png",
+        "bounds": [
+          0,
+          222,
+          48,
+          270
+        ],
+        "analysis": {
+          "width": 48,
+          "height": 48,
+          "mean_brightness": 25.0,
+          "rgb_mean": [
+            24.0,
+            24.0,
+            27.0
+          ],
+          "std_dev": 0.0,
+          "unique_sample_colors": 1,
+          "is_all_black": false,
+          "is_solid_color": true,
+          "is_blank": false
+        }
+      },
+      "bottom_right": {
+        "path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\artifacts\\pip_captures\\crop_corner_bottom_right_0x05A80C82.png",
+        "bounds": [
+          432,
+          222,
+          480,
+          270
+        ],
+        "analysis": {
+          "width": 48,
+          "height": 48,
+          "mean_brightness": 25.0,
+          "rgb_mean": [
+            24.0,
+            24.0,
+            27.0
+          ],
+          "std_dev": 0.0,
+          "unique_sample_colors": 1,
+          "is_all_black": false,
+          "is_solid_color": true,
+          "is_blank": false
+        }
+      }
+    }
+  },
+  "summary": {
+    "pass": true,
+    "checks": [
+      [
+        "Window Handle & Desktop Binding",
+        true,
+        "HWND 0x05A80C82 on 'exebox-WUO4NQ34GF5I7TE3OQEJLRUNUE'"
+      ],
+      [
+        "Window Visibility",
+        true,
+        "Visible=True, Iconic=False"
+      ],
+      [
+        "Window Position & Geometry",
+        true,
+        "480x270 at (1424,16), Preset=TopRight"
+      ],
+      [
+        "Ghost PiP Extended Styles",
+        true,
+        "Topmost=True, NoActivate=True, Transparent=False"
+      ],
+      [
+        "DWM Composition & Uncloaked",
+        true,
+        "Composition=True, Cloaked=0"
+      ],
+      [
+        "DWM Redirection List Registration",
+        true,
+        "Registered=True, SourceSize=480x270"
+      ],
+      [
+        "Visual Tree Presence",
+        true,
+        "Win32=True, UIA=True, IAccessible=True"
+      ],
+      [
+        "Cropped Area Captures",
+        true,
+        "Saved 4 capture views to pip_captures"
+      ],
+      [
+        "Rendered Pixel Verification",
+        true,
+        "Brightness=25.0, StdDev=0.0, Blank=False"
+      ]
+    ]
+  }
+}

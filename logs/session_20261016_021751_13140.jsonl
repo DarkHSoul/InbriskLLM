@@ -1,0 +1,36 @@
+{"ts":"2026-10-15T23:17:54.770181+00:00","kind":"user","content":"hi"}
+{"ts":"2026-10-15T23:17:54.770181+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:18:03.822788+00:00","kind":"assistant","content":"Hi! How can I assist you today?"}
+{"ts":"2026-10-15T23:18:08.896903+00:00","kind":"user","content":"nasılsın"}
+{"ts":"2026-10-15T23:18:08.896903+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:18:11.365502+00:00","kind":"assistant","content":"Hi! What can I do for you?"}
+{"ts":"2026-10-15T23:18:22.341924+00:00","kind":"user","content":"türkçe konuşabilirmisin ?"}
+{"ts":"2026-10-15T23:18:22.341924+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:18:24.807795+00:00","kind":"assistant","content":"Hi! Can I help you in Turkish?"}
+{"ts":"2026-10-15T23:18:38.689126+00:00","kind":"user","content":"speak turkish"}
+{"ts":"2026-10-15T23:18:38.689126+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:18:41.239078+00:00","kind":"assistant","content":"Hi! Can I speak Turkish to you?"}
+{"ts":"2026-10-15T23:18:43.968255+00:00","kind":"user","content":"yes"}
+{"ts":"2026-10-15T23:18:43.968255+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:18:46.495406+00:00","kind":"assistant","content":"Yes, I can. How can I assist you today?"}
+{"ts":"2026-10-15T23:18:53.614627+00:00","kind":"user","content":"what"}
+{"ts":"2026-10-15T23:18:53.614627+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:18:56.084496+00:00","kind":"assistant","content":"What can I help you with today?"}
+{"ts":"2026-10-15T23:19:00.240815+00:00","kind":"user","content":"speak turkishg"}
+{"ts":"2026-10-15T23:19:00.240815+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:19:02.721394+00:00","kind":"assistant","content":"Hi! Can I speak Turkish to you?"}
+{"ts":"2026-10-15T23:19:12.788886+00:00","kind":"user","content":"what"}
+{"ts":"2026-10-15T23:19:12.788886+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:19:15.146764+00:00","kind":"assistant","content":"What can I help you with today?"}
+{"ts":"2026-10-15T23:19:16.353189+00:00","kind":"user","content":"IDK"}
+{"ts":"2026-10-15T23:19:16.353189+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:19:18.858902+00:00","kind":"assistant","content":"I'm sorry, but I don't understand what you're asking. Could you please clarify your question?"}
+{"ts":"2026-10-15T23:19:20.144207+00:00","kind":"user","content":"LMFAO"}
+{"ts":"2026-10-15T23:19:20.144207+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:19:22.586160+00:00","kind":"assistant","content":"LMFAO! How can I assist you today?"}
+{"ts":"2026-10-15T23:19:28.158208+00:00","kind":"user","content":"PROBRUH"}
+{"ts":"2026-10-15T23:19:28.158208+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:19:30.717771+00:00","kind":"assistant","content":"I'm sorry, but I don't understand what you're asking. Could you please clarify your question?"}
+{"ts":"2026-10-15T23:19:35.537366+00:00","kind":"user","content":"launch notepad"}
+{"ts":"2026-10-15T23:19:35.537366+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:19:38.071227+00:00","kind":"assistant","content":"computer_launch() with app=\"Notepad\" and ghost=False."}

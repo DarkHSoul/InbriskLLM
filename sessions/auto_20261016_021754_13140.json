@@ -1,0 +1,98 @@
+[
+  {
+    "role": "user",
+    "content": "hi"
+  },
+  {
+    "role": "assistant",
+    "content": "Hi! How can I assist you today?"
+  },
+  {
+    "role": "user",
+    "content": "nasılsın"
+  },
+  {
+    "role": "assistant",
+    "content": "Hi! What can I do for you?"
+  },
+  {
+    "role": "user",
+    "content": "türkçe konuşabilirmisin ?"
+  },
+  {
+    "role": "assistant",
+    "content": "Hi! Can I help you in Turkish?"
+  },
+  {
+    "role": "user",
+    "content": "speak turkish"
+  },
+  {
+    "role": "assistant",
+    "content": "Hi! Can I speak Turkish to you?"
+  },
+  {
+    "role": "user",
+    "content": "yes"
+  },
+  {
+    "role": "assistant",
+    "content": "Yes, I can. How can I assist you today?"
+  },
+  {
+    "role": "user",
+    "content": "what"
+  },
+  {
+    "role": "assistant",
+    "content": "What can I help you with today?"
+  },
+  {
+    "role": "user",
+    "content": "speak turkishg"
+  },
+  {
+    "role": "assistant",
+    "content": "Hi! Can I speak Turkish to you?"
+  },
+  {
+    "role": "user",
+    "content": "what"
+  },
+  {
+    "role": "assistant",
+    "content": "What can I help you with today?"
+  },
+  {
+    "role": "user",
+    "content": "IDK"
+  },
+  {
+    "role": "assistant",
+    "content": "I'm sorry, but I don't understand what you're asking. Could you please clarify your question?"
+  },
+  {
+    "role": "user",
+    "content": "LMFAO"
+  },
+  {
+    "role": "assistant",
+    "content": "LMFAO! How can I assist you today?"
+  },
+  {
+    "role": "user",
+    "content": "PROBRUH"
+  },
+  {
+    "role": "assistant",
+    "content": "I'm sorry, but I don't understand what you're asking. Could you please clarify your question?"
+  },
+  {
+    "role": "user",
+    "content": "launch notepad"
+  },
+  {
+    "role": "assistant",
+    "content": "computer_launch() with app=\"Notepad\" and ghost=False."
+  }
+]

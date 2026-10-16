@@ -1,0 +1,348 @@
+{
+  "schema_version": "1.0",
+  "title": "Inbrisk Automated Stress Test & Validation Report",
+  "start_time": "2026-10-15T01:04:14.961642+00:00",
+  "end_time": "2026-10-15T01:04:33.367076+00:00",
+  "total_duration_seconds": 18.405,
+  "iterations_requested": 2,
+  "overall_status": "PASSED",
+  "summary": {
+    "total_executed": 6,
+    "passed": 6,
+    "failed": 0,
+    "pass_rate_percent": 100.0
+  },
+  "inbrisk_server": {
+    "executable": "C:\\Users\\Ahmet\\AppData\\Local\\Programs\\Inbrisk\\inbrisk.exe",
+    "server_info": {
+      "name": "inbrisk",
+      "version": "0.5.0+6aa62d48ff7a2a59da57e0280fd06f30a09f74c1"
+    },
+    "protocol_version": "2024-11-05",
+    "published_tools_count": 25
+  },
+  "tests": [
+    {
+      "test_name": "Calculator 15+24=39",
+      "target": "calculator",
+      "hwnd": 852528,
+      "hwnd_hex": "0x000D0230",
+      "pid": 8976,
+      "window_title": "Hesap Makinesi",
+      "window_rect": [
+        30,
+        80,
+        510,
+        760
+      ],
+      "start_time": "2026-10-15T01:04:14.961642+00:00",
+      "end_time": "2026-10-15T01:04:19.044835+00:00",
+      "duration_seconds": 4.083,
+      "status": "PASSED",
+      "steps": [
+        {
+          "action": "clear",
+          "tool": "computer_click",
+          "duration_ms": 546.16,
+          "success": true
+        },
+        {
+          "action": "press_1",
+          "alias": "Bir",
+          "tool": "computer_click",
+          "duration_ms": 191.05,
+          "status": "success"
+        },
+        {
+          "action": "press_5",
+          "alias": "Beş",
+          "tool": "computer_click",
+          "duration_ms": 206.77,
+          "status": "success"
+        },
+        {
+          "action": "press_+",
+          "alias": "Artı",
+          "tool": "computer_click",
+          "duration_ms": 220.09,
+          "status": "success"
+        },
+        {
+          "action": "press_2",
+          "alias": "İki",
+          "tool": "computer_click",
+          "duration_ms": 240.84,
+          "status": "success"
+        },
+        {
+          "action": "press_4",
+          "alias": "Dört",
+          "tool": "computer_click",
+          "duration_ms": 167.77,
+          "status": "success"
+        },
+        {
+          "action": "press_=",
+          "alias": "Eşittir",
+          "tool": "computer_click",
+          "duration_ms": 165.68,
+          "status": "success"
+        },
+        {
+          "action": "inspect_result",
+          "tool": "computer_inspect",
+          "duration_ms": 81.92,
+          "status": "success"
+        }
+      ],
+      "verification": {
+        "expected_result": "39",
+        "verified": true,
+        "display_evidence": "[uia_28184_34] Text \"Ekran değeri 39\" actions=[click,invoke,scrollintoview]",
+        "expression_evidence": "[uia_28184_33] Text \"İfade değeri 15 + 24=\" actions=[click,scrollintoview,invoke]"
+      },
+      "screenshot_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\reports\\screenshots\\calculator_0x000D0230_20261015_040419_043.png"
+    },
+    {
+      "test_name": "Notepad Text Verification",
+      "target": "notepad",
+      "hwnd": 2886216,
+      "hwnd_hex": "0x002C0A48",
+      "pid": 18792,
+      "window_title": "*Inbrisk Stress Test Verification 39, Not Defteri",
+      "window_rect": [
+        530,
+        80,
+        1190,
+        760
+      ],
+      "start_time": "2026-10-15T01:04:20.046003+00:00",
+      "end_time": "2026-10-15T01:04:21.758629+00:00",
+      "duration_seconds": 1.713,
+      "status": "PASSED",
+      "steps": [
+        {
+          "action": "type_text",
+          "content": "Inbrisk Stress Test Verification 39 [UID:d73c5f67]",
+          "method": "clipboard_paste",
+          "success": true
+        },
+        {
+          "action": "inspect_document",
+          "tool": "computer_inspect",
+          "duration_ms": 161.21,
+          "status": "success"
+        }
+      ],
+      "verification": {
+        "expected_substring": "d73c5f67",
+        "verified": true,
+        "document_evidence": "[uia_28184_75] Document \"Metin düzenleyici\" value=\"Inbrisk Stress Test Verification 39 [UID:d73c5f67]\" actions=[click,setvalue,invoke]"
+      },
+      "screenshot_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\reports\\screenshots\\notepad_0x002C0A48_20261015_040421_757.png"
+    },
+    {
+      "test_name": "Paint State Verification",
+      "target": "paint",
+      "hwnd": 21236292,
+      "hwnd_hex": "0x01440A44",
+      "pid": 19512,
+      "window_title": "Adsız - Paint",
+      "window_rect": [
+        1210,
+        80,
+        1914,
+        760
+      ],
+      "start_time": "2026-10-15T01:04:22.760162+00:00",
+      "end_time": "2026-10-15T01:04:23.108082+00:00",
+      "duration_seconds": 0.348,
+      "status": "PASSED",
+      "steps": [
+        {
+          "action": "inspect_state",
+          "tool": "computer_inspect",
+          "duration_ms": 89.8,
+          "status": "success"
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "menu_items_detected": [
+          "[uia_28184_115] MenuItem \"Dosya\" actions=[click,invoke,expandcollapse,scrollintoview]",
+          "[uia_28184_116] MenuItem \"Düzenle\" actions=[click,invoke,expandcollapse,scrollintoview]",
+          "[uia_28184_117] MenuItem \"Görünüm\" actions=[click,invoke,expandcollapse,scrollintoview]"
+        ],
+        "controls_detected": [
+          "window 0x1440A44 [screen: Fırçalar]: 63 elements (showing 40):",
+          "[uia_28184_118] Button \"Kaydet\" actions=[click,invoke,scrollintoview]",
+          "[uia_28184_126] Group \"Seçim\" actions=[click,scrollintoview,invoke]",
+          "[uia_28184_127] RadioButton \"Seç\" value=\"Dikdörtgen\" actions=[click,invoke,setvalue,select,expandcollapse,scrollintoview]",
+          "[uia_28184_128] Image \"\" actions=[click,scrollintoview,invoke]"
+        ]
+      },
+      "screenshot_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\reports\\screenshots\\paint_0x01440A44_20261015_040423_106.png"
+    },
+    {
+      "test_name": "Calculator 15+24=39",
+      "target": "calculator",
+      "hwnd": 852528,
+      "hwnd_hex": "0x000D0230",
+      "pid": 8976,
+      "window_title": "Hesap Makinesi",
+      "window_rect": [
+        30,
+        80,
+        510,
+        760
+      ],
+      "start_time": "2026-10-15T01:04:24.609301+00:00",
+      "end_time": "2026-10-15T01:04:27.956627+00:00",
+      "duration_seconds": 3.347,
+      "status": "PASSED",
+      "steps": [
+        {
+          "action": "clear",
+          "tool": "computer_click",
+          "duration_ms": 157.44,
+          "success": true
+        },
+        {
+          "action": "press_1",
+          "alias": "Bir",
+          "tool": "computer_click",
+          "duration_ms": 136.12,
+          "status": "success"
+        },
+        {
+          "action": "press_5",
+          "alias": "Beş",
+          "tool": "computer_click",
+          "duration_ms": 146.69,
+          "status": "success"
+        },
+        {
+          "action": "press_+",
+          "alias": "Artı",
+          "tool": "computer_click",
+          "duration_ms": 138.67,
+          "status": "success"
+        },
+        {
+          "action": "press_2",
+          "alias": "İki",
+          "tool": "computer_click",
+          "duration_ms": 156.93,
+          "status": "success"
+        },
+        {
+          "action": "press_4",
+          "alias": "Dört",
+          "tool": "computer_click",
+          "duration_ms": 137.98,
+          "status": "success"
+        },
+        {
+          "action": "press_=",
+          "alias": "Eşittir",
+          "tool": "computer_click",
+          "duration_ms": 162.46,
+          "status": "success"
+        },
+        {
+          "action": "inspect_result",
+          "tool": "computer_inspect",
+          "duration_ms": 57.5,
+          "status": "success"
+        }
+      ],
+      "verification": {
+        "expected_result": "39",
+        "verified": true,
+        "display_evidence": "[uia_28184_207] Text \"Ekran değeri 39\" actions=[click,invoke,scrollintoview]",
+        "expression_evidence": "[uia_28184_206] Text \"İfade değeri 15 + 24=\" actions=[click,scrollintoview,invoke]"
+      },
+      "screenshot_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\reports\\screenshots\\calculator_0x000D0230_20261015_040427_955.png"
+    },
+    {
+      "test_name": "Notepad Text Verification",
+      "target": "notepad",
+      "hwnd": 2886216,
+      "hwnd_hex": "0x002C0A48",
+      "pid": 18792,
+      "window_title": "*Inbrisk Stress Test Verification 39, Not Defteri",
+      "window_rect": [
+        530,
+        80,
+        1190,
+        760
+      ],
+      "start_time": "2026-10-15T01:04:28.957408+00:00",
+      "end_time": "2026-10-15T01:04:30.559113+00:00",
+      "duration_seconds": 1.602,
+      "status": "PASSED",
+      "steps": [
+        {
+          "action": "type_text",
+          "content": "Inbrisk Stress Test Verification 39 [UID:573387db]",
+          "method": "clipboard_paste",
+          "success": true
+        },
+        {
+          "action": "inspect_document",
+          "tool": "computer_inspect",
+          "duration_ms": 59.67,
+          "status": "success"
+        }
+      ],
+      "verification": {
+        "expected_substring": "573387db",
+        "verified": true,
+        "document_evidence": "[uia_28184_248] Document \"Metin düzenleyici\" value=\"Inbrisk Stress Test Verification 39 [UID:573387db]\" actions=[click,setvalue,invoke]"
+      },
+      "screenshot_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\reports\\screenshots\\notepad_0x002C0A48_20261015_040430_557.png"
+    },
+    {
+      "test_name": "Paint State Verification",
+      "target": "paint",
+      "hwnd": 21236292,
+      "hwnd_hex": "0x01440A44",
+      "pid": 19512,
+      "window_title": "Adsız - Paint",
+      "window_rect": [
+        1210,
+        80,
+        1914,
+        760
+      ],
+      "start_time": "2026-10-15T01:04:31.560719+00:00",
+      "end_time": "2026-10-15T01:04:31.866473+00:00",
+      "duration_seconds": 0.306,
+      "status": "PASSED",
+      "steps": [
+        {
+          "action": "inspect_state",
+          "tool": "computer_inspect",
+          "duration_ms": 68.51,
+          "status": "success"
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "menu_items_detected": [
+          "[uia_28184_288] MenuItem \"Dosya\" actions=[click,invoke,expandcollapse,scrollintoview]",
+          "[uia_28184_289] MenuItem \"Düzenle\" actions=[click,invoke,expandcollapse,scrollintoview]",
+          "[uia_28184_290] MenuItem \"Görünüm\" actions=[click,invoke,expandcollapse,scrollintoview]"
+        ],
+        "controls_detected": [
+          "window 0x1440A44 [screen: Fırçalar]: 63 elements (showing 40):",
+          "[uia_28184_291] Button \"Kaydet\" actions=[click,invoke,scrollintoview]",
+          "[uia_28184_299] Group \"Seçim\" actions=[click,scrollintoview,invoke]",
+          "[uia_28184_300] RadioButton \"Seç\" value=\"Dikdörtgen\" actions=[click,invoke,setvalue,select,expandcollapse,scrollintoview]",
+          "[uia_28184_301] Image \"\" actions=[click,scrollintoview,invoke]"
+        ]
+      },
+      "screenshot_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\reports\\screenshots\\paint_0x01440A44_20261015_040431_864.png"
+    }
+  ]
+}

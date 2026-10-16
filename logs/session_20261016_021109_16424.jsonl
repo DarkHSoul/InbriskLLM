@@ -1,0 +1,12 @@
+{"ts":"2026-10-15T23:11:12.788083+00:00","kind":"user","content":"hi"}
+{"ts":"2026-10-15T23:11:12.788083+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:11:21.770433+00:00","kind":"assistant","content":"Hi! How can I assist you today?"}
+{"ts":"2026-10-15T23:11:36.642530+00:00","kind":"user","content":"how are you ?"}
+{"ts":"2026-10-15T23:11:36.642530+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:11:38.922376+00:00","kind":"assistant","content":"I'm here to help. Let me know how I can assist you!"}
+{"ts":"2026-10-15T23:11:45.867100+00:00","kind":"user","content":"launch notepad"}
+{"ts":"2026-10-15T23:11:45.867100+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:11:48.131298+00:00","kind":"assistant","content":"computer_launch(app=Notepad, ghost=false)"}
+{"ts":"2026-10-15T23:12:04.227678+00:00","kind":"user","content":"you didn't launch it"}
+{"ts":"2026-10-15T23:12:04.227678+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:12:06.564930+00:00","kind":"assistant","content":"I tried launching Notepad, but it might have already started. Could you please try again?"}

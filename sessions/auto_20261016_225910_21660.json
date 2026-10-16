@@ -1,0 +1,10 @@
+[
+  {
+    "role": "user",
+    "content": "launch notepad in the background without moving my cursor"
+  },
+  {
+    "role": "assistant",
+    "content": "'notepad' -> app 'notepad'; 'without moving my cursor' -> hint 'normal kullanıcı' -> hint 'normal kullanıcı' -> hint 'normal kullanıcı'"
+  }
+]

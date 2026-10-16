@@ -1,0 +1,187 @@
+{
+  "schema_version": "1.0",
+  "title": "Inbrisk Automated Stress Test & Validation Report",
+  "start_time": "2026-10-15T01:03:32.567463+00:00",
+  "end_time": "2026-10-15T01:03:41.914387+00:00",
+  "total_duration_seconds": 9.347,
+  "iterations_requested": 1,
+  "overall_status": "PASSED",
+  "summary": {
+    "total_executed": 3,
+    "passed": 3,
+    "failed": 0,
+    "pass_rate_percent": 100.0
+  },
+  "inbrisk_server": {
+    "executable": "C:\\Users\\Ahmet\\AppData\\Local\\Programs\\Inbrisk\\inbrisk.exe",
+    "server_info": {
+      "name": "inbrisk",
+      "version": "0.5.0+6aa62d48ff7a2a59da57e0280fd06f30a09f74c1"
+    },
+    "protocol_version": "2024-11-05",
+    "published_tools_count": 25
+  },
+  "tests": [
+    {
+      "test_name": "Calculator 15+24=39",
+      "target": "calculator",
+      "hwnd": 852528,
+      "hwnd_hex": "0x000D0230",
+      "pid": 8976,
+      "window_title": "Hesap Makinesi",
+      "window_rect": [
+        30,
+        80,
+        510,
+        760
+      ],
+      "start_time": "2026-10-15T01:03:32.567463+00:00",
+      "end_time": "2026-10-15T01:03:36.344154+00:00",
+      "duration_seconds": 3.777,
+      "status": "PASSED",
+      "steps": [
+        {
+          "action": "clear",
+          "tool": "computer_click",
+          "duration_ms": 481.37,
+          "success": true
+        },
+        {
+          "action": "press_1",
+          "alias": "Bir",
+          "tool": "computer_click",
+          "duration_ms": 160.91,
+          "status": "success"
+        },
+        {
+          "action": "press_5",
+          "alias": "Beş",
+          "tool": "computer_click",
+          "duration_ms": 150.34,
+          "status": "success"
+        },
+        {
+          "action": "press_+",
+          "alias": "Artı",
+          "tool": "computer_click",
+          "duration_ms": 159.51,
+          "status": "success"
+        },
+        {
+          "action": "press_2",
+          "alias": "İki",
+          "tool": "computer_click",
+          "duration_ms": 142.74,
+          "status": "success"
+        },
+        {
+          "action": "press_4",
+          "alias": "Dört",
+          "tool": "computer_click",
+          "duration_ms": 164.19,
+          "status": "success"
+        },
+        {
+          "action": "press_=",
+          "alias": "Eşittir",
+          "tool": "computer_click",
+          "duration_ms": 154.72,
+          "status": "success"
+        },
+        {
+          "action": "inspect_result",
+          "tool": "computer_inspect",
+          "duration_ms": 88.31,
+          "status": "success"
+        }
+      ],
+      "verification": {
+        "expected_result": "39",
+        "verified": true,
+        "display_evidence": "[uia_21132_34] Text \"Ekran değeri 39\" actions=[click,invoke,scrollintoview]",
+        "expression_evidence": "[uia_21132_33] Text \"İfade değeri 15 + 24=\" actions=[click,scrollintoview,invoke]"
+      },
+      "screenshot_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\reports\\screenshots\\calculator_0x000D0230_20261015_040336_342.png"
+    },
+    {
+      "test_name": "Notepad Text Verification",
+      "target": "notepad",
+      "hwnd": 2886216,
+      "hwnd_hex": "0x002C0A48",
+      "pid": 18792,
+      "window_title": "*Stress test result 39Stress test re, Not Defteri",
+      "window_rect": [
+        530,
+        80,
+        1190,
+        760
+      ],
+      "start_time": "2026-10-15T01:03:37.345592+00:00",
+      "end_time": "2026-10-15T01:03:39.031569+00:00",
+      "duration_seconds": 1.686,
+      "status": "PASSED",
+      "steps": [
+        {
+          "action": "type_text",
+          "content": "Inbrisk Stress Test Verification 39 [UID:c836886b]",
+          "method": "clipboard_paste",
+          "success": true
+        },
+        {
+          "action": "inspect_document",
+          "tool": "computer_inspect",
+          "duration_ms": 138.13,
+          "status": "success"
+        }
+      ],
+      "verification": {
+        "expected_substring": "c836886b",
+        "verified": true,
+        "document_evidence": "[uia_21132_75] Document \"Metin düzenleyici\" value=\"Inbrisk Stress Test Verification 39 [UID:c836886b]\" actions=[click,setvalue,invoke]"
+      },
+      "screenshot_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\reports\\screenshots\\notepad_0x002C0A48_20261015_040339_030.png"
+    },
+    {
+      "test_name": "Paint State Verification",
+      "target": "paint",
+      "hwnd": 21236292,
+      "hwnd_hex": "0x01440A44",
+      "pid": 19512,
+      "window_title": "Adsız - Paint",
+      "window_rect": [
+        1210,
+        80,
+        1914,
+        760
+      ],
+      "start_time": "2026-10-15T01:03:40.033150+00:00",
+      "end_time": "2026-10-15T01:03:40.413757+00:00",
+      "duration_seconds": 0.381,
+      "status": "PASSED",
+      "steps": [
+        {
+          "action": "inspect_state",
+          "tool": "computer_inspect",
+          "duration_ms": 117.36,
+          "status": "success"
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "menu_items_detected": [
+          "[uia_21132_115] MenuItem \"Dosya\" actions=[click,invoke,expandcollapse,scrollintoview]",
+          "[uia_21132_116] MenuItem \"Düzenle\" actions=[click,invoke,expandcollapse,scrollintoview]",
+          "[uia_21132_117] MenuItem \"Görünüm\" actions=[click,invoke,expandcollapse,scrollintoview]"
+        ],
+        "controls_detected": [
+          "window 0x1440A44 [screen: Fırçalar]: 63 elements (showing 40):",
+          "[uia_21132_118] Button \"Kaydet\" actions=[click,invoke,scrollintoview]",
+          "[uia_21132_126] Group \"Seçim\" actions=[click,scrollintoview,invoke]",
+          "[uia_21132_127] RadioButton \"Seç\" value=\"Dikdörtgen\" actions=[click,invoke,setvalue,select,expandcollapse,scrollintoview]",
+          "[uia_21132_128] Image \"\" actions=[click,scrollintoview,invoke]"
+        ]
+      },
+      "screenshot_path": "C:\\Users\\Ahmet\\Documents\\InbriskLLM\\reports\\screenshots\\paint_0x01440A44_20261015_040340_412.png"
+    }
+  ]
+}

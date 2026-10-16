@@ -1,6 +1,8 @@
 {
   "default_backend": "ollama",
-  "local_agent_model": "inbrisk-3b",
+  "local_agent_model": "inbrisk-qwen3:0.6b",
+  "num_ctx": 4096,
+  "ollama_think": false,
   "inbrisk_exe": "C:\\Users\\Ahmet\\AppData\\Local\\Programs\\Inbrisk\\inbrisk.exe",
   "agent_keep_alive": 600,
   "agent_temperature": 0.0,

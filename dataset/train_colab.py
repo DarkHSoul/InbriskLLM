@@ -42,10 +42,14 @@ def ensure_dataset():
         "computer_* araclari masaustunu DOGRUDAN yonetir ve DOGRUDAN cagrilir;\n"
         "tool_name/arguments sarmalamasi YOKTUR, aracin kendi parametrelerini alir:\n"
         '  computer_launch   {"app": "Notepad"}\n'
+        '  computer_launch   {"app": "Notepad", "ghost": true}\n'
         '  computer_do       {"app": "Notepad", "type": "Merhaba", "submit": true}\n'
         '  computer_windows  {}\n'
         "get_system_info yalnizca sistem bilgisi verir (topic: datetime, cwd, hostname, user, os, disk); masaustu otomasyonu YAPMAZ.\n"
         "Uygulama acma, tiklama, yazma, tus, pencere kapatma ve ekran gozlemleme istekleri SADECE computer_* araclariyla yapilir.\n\n"
+        "GHOST MODU (ARKA PLAN OTURUMU):\n"
+        "- Varsayilan olarak tum islemler kullanicinin aktif ekraninda yapilir (ghost: false).\n"
+        "- Kullanici 'arka planda', 'arkada', 'sessizce', 'ghost modunda', 'ekranimi mesgul etmeden' derse ilgili tum computer_* araclarina 'ghost: true' parametresi eklenir.\n\n"
         "KURALLAR:\n"
         "- Eylem gerekiyorsa tool cagir; gerekmiyorsa dogrudan cevap ver.\n"
         "- Tool adini, argumanlari, pencere kimligini, element id'sini ASLA uydurma.\n"
@@ -147,10 +151,11 @@ def main():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    # 102 GB VRAM gücü: Saf bfloat16
+    # 102 GB VRAM gücü: Saf bfloat16 & SDPA / FlashAttention
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_ID,
-        dtype=torch.bfloat16,
+        torch_dtype=torch.bfloat16,
+        attn_implementation="sdpa",
         device_map="auto",
         trust_remote_code=True,
     )

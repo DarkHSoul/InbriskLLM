@@ -1,0 +1,5 @@
+{"ts":"2026-10-15T14:36:07.131611+00:00","kind":"user","content":"Not defterini aÃ§"}
+{"ts":"2026-10-15T14:36:07.131611+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T14:36:52.984031+00:00","kind":"tool","name":"computer_launch","args":{"app":"Notepad.exe","ghost":true,"waitFor":"process"},"result":"Arac calistirilamadi: MCP sureci kapandi","error":true}
+{"ts":"2026-10-15T14:36:52.984031+00:00","kind":"model_request","iteration":2,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T14:36:57.245165+00:00","kind":"assistant","content":"Arac calistirilamadi: MCP sureci kapandi."}

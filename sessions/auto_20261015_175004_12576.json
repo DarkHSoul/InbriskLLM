@@ -1,0 +1,34 @@
+[
+  {
+    "role": "user",
+    "content": "merhaba"
+  },
+  {
+    "role": "assistant",
+    "content": "Merhaba! İstersen, ne yapçoisun?"
+  },
+  {
+    "role": "user",
+    "content": "nasılsın"
+  },
+  {
+    "role": "assistant",
+    "content": "Nasılsın? İstersen, ne yapçoisun?"
+  },
+  {
+    "role": "user",
+    "content": "hello"
+  },
+  {
+    "role": "assistant",
+    "content": "İstersen, ne yapçoisun?"
+  },
+  {
+    "role": "user",
+    "content": "what"
+  },
+  {
+    "role": "assistant",
+    "content": "İstersen, ne yapçoisun?"
+  }
+]

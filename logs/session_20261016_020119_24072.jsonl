@@ -1,0 +1,3 @@
+{"ts":"2026-10-15T23:01:24.320610+00:00","kind":"user","content":"merhaba"}
+{"ts":"2026-10-15T23:01:24.320610+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T23:01:28.246658+00:00","kind":"assistant","content":"Merhaba! İstersen, ne yapçoisun?"}

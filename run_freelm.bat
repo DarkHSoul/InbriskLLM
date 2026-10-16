@@ -47,7 +47,7 @@ pause
 exit /b 1
 
 :run_agent
-python ai_shell.py --backend openai --base-url "%BASE%" --api-key "freelm" %*
+python ai_shell.py --backend openai --base-url "%BASE%" --api-key "freelm" --model "Qwen3.5-397B-A17B" %*
 set "RC=%errorlevel%"
 
 REM --- Sunucuyu biz baslattiysak kapat

@@ -1,0 +1,10 @@
+[
+  {
+    "role": "user",
+    "content": "merhaba"
+  },
+  {
+    "role": "assistant",
+    "content": "Merhaba! İstersen, ne yapçoisun?"
+  }
+]

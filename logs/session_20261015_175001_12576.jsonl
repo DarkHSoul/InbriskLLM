@@ -1,0 +1,12 @@
+{"ts":"2026-10-15T14:50:06.337575+00:00","kind":"user","content":"merhaba"}
+{"ts":"2026-10-15T14:50:06.337575+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T14:50:08.591200+00:00","kind":"assistant","content":"Merhaba! İstersen, ne yapçoisun?"}
+{"ts":"2026-10-15T14:50:34.012372+00:00","kind":"user","content":"nasılsın"}
+{"ts":"2026-10-15T14:50:34.012372+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T14:50:36.505101+00:00","kind":"assistant","content":"Nasılsın? İstersen, ne yapçoisun?"}
+{"ts":"2026-10-15T14:50:42.788202+00:00","kind":"user","content":"hello"}
+{"ts":"2026-10-15T14:50:42.788202+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T14:50:45.204036+00:00","kind":"assistant","content":"İstersen, ne yapçoisun?"}
+{"ts":"2026-10-15T14:50:48.488871+00:00","kind":"user","content":"what"}
+{"ts":"2026-10-15T14:50:48.488871+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T14:50:50.839492+00:00","kind":"assistant","content":"İstersen, ne yapçoisun?"}

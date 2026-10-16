@@ -1,0 +1,8 @@
+{"ts":"2026-10-14T21:55:23.408388+00:00","kind":"user","content":"Güneş sistemindeki en büyük gezegen hangisidir?"}
+{"ts":"2026-10-14T21:55:23.408388+00:00","kind":"model_request","iteration":1,"model":"inbrisk-3b"}
+{"ts":"2026-10-14T21:58:33.576841+00:00","kind":"user","content":"Şu an açık olan pencereleri listele."}
+{"ts":"2026-10-14T21:58:33.576841+00:00","kind":"model_request","iteration":1,"model":"inbrisk-3b"}
+{"ts":"2026-10-14T22:01:43.733275+00:00","kind":"user","content":"Not Defterini aç."}
+{"ts":"2026-10-14T22:01:43.733275+00:00","kind":"model_request","iteration":1,"model":"inbrisk-3b"}
+{"ts":"2026-10-14T22:04:53.903308+00:00","kind":"user","content":"Açtığın Not Defteri penceresini kapat."}
+{"ts":"2026-10-14T22:04:53.903308+00:00","kind":"model_request","iteration":1,"model":"inbrisk-3b"}

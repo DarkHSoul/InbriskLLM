@@ -1,0 +1,10 @@
+[
+  {
+    "role": "user",
+    "content": "su an acik pencereleri listele"
+  },
+  {
+    "role": "assistant",
+    "content": "'su an acik pencereleri listele' -> computer_close_window window 'acik pencereleri listele'"
+  }
+]

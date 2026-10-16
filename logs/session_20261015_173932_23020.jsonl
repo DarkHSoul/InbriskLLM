@@ -1,0 +1,6 @@
+{"ts":"2026-10-15T14:39:37.146096+00:00","kind":"user","content":"merhaba"}
+{"ts":"2026-10-15T14:39:37.146096+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T14:40:12.157280+00:00","kind":"assistant","content":"Merhaba! İsterseniz senin için yardım edebilirim."}
+{"ts":"2026-10-15T14:40:20.910823+00:00","kind":"user","content":"sen kimsin"}
+{"ts":"2026-10-15T14:40:20.910823+00:00","kind":"model_request","iteration":1,"model":"inbrisk-qwen3:0.6b"}
+{"ts":"2026-10-15T14:40:56.055321+00:00","kind":"assistant","content":"Sınavı tamamlayarak senin için yardım edebilirim."}
